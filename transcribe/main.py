@@ -1,4 +1,5 @@
-# Example run of this in Google Colab here: https://colab.research.google.com/drive/1BFauKBulKKSllkGVDhXnJQOIUD-qkgXL#scrollTo=O8f2WlCW8qLR
+# Example run of this in Google Colab here:
+# https://colab.research.google.com/drive/1BFauKBulKKSllkGVDhXnJQOIUD-qkgXL#scrollTo=O8f2WlCW8qLR
 import whisper
 import json
 import yt_dlp
