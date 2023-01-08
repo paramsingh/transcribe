@@ -53,9 +53,9 @@ class WhisperProcessor:
         return model.transcribe(filename)
 
 
-    if __name__ == "__main__":
-        processor = WhisperProcessor()
-        schedule.every(5).minutes.do(processor.process())
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
+if __name__ == "__main__":
+    processor = WhisperProcessor()
+    schedule.every(5).minutes.do(processor.process())
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
