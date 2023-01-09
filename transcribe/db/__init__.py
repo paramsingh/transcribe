@@ -1,9 +1,13 @@
 import sqlite3
 
+connection = None
+
 
 def init_db() -> sqlite3.Connection:
+    global connection
     # TODO: this path needs to be a config option.
-    connection = sqlite3.connect("database.db")
+    if connection is None:
+        connection = sqlite3.connect("database.db")
     return connection
 
 
