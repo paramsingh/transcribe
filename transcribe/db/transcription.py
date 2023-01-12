@@ -2,31 +2,43 @@ from uuid import uuid4
 from transcribe.db import init_db
 
 
-def transcription_exists(link):
+def get_transcription(uuid: str) -> dict:
     connection = init_db()
     cursor = connection.cursor()
+
     cursor.execute(
         """
-        SELECT EXISTS(SELECT 1 FROM transcription WHERE link = ? LIMIT 1);
+        SELECT * FROM transcription WHERE uuid = ?;
     """,
-        (link,),
+        (uuid,),
     )
-    exists = cursor.fetchone()[0]
+    result = cursor.fetchone()
     connection.close()
-    return exists
+
+    if result:
+        return {
+            "uuid": result[0],
+            "link": result[1],
+            "result": result[2],
+        }
+    return None
+
 
 def create_transcription(link: str, result: str) -> None:
     connection = init_db()
     cursor = connection.cursor()
 
-    if transcription_exists(link):
-        return None
+    existing = get_transcription(link)
+    if existing:
+        return existing["uuid"]
 
+    uuid = str(uuid4())
     cursor.execute(
         """
         INSERT INTO transcription (uuid, link, result) VALUES (?, ?, ?);
     """,
-        (str(uuid4()), link, result),
+        (uuid, link, result),
     )
     connection.commit()
     connection.close()
+    return uuid

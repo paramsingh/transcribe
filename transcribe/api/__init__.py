@@ -14,6 +14,17 @@ def transcribe() -> Response:
     link = request_data.get("link")
     if not link:
         return jsonify({"error": "no link"}), 400
-    transcription_db.create_transcription(link, None)
-    # TODO: push to the queue
-    return jsonify({"id": "uuid"})
+    uuid = transcription_db.create_transcription(link, None)
+    return jsonify({"id": uuid})
+
+
+@api_bp.route("/transcription/<uuid>/details", methods=["GET"])
+@cross_origin()
+def get_transcription() -> Response:
+    uuid = request.args.get("uuid")
+    if not uuid:
+        return jsonify({"error": "no uuid"}), 400
+    result = transcription_db.get_transcription(uuid)
+    if not result:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(result)
