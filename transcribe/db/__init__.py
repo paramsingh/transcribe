@@ -1,13 +1,9 @@
 import sqlite3
 
-connection = None
-
 
 def init_db() -> sqlite3.Connection:
-    global connection
     # TODO: this path needs to be a config option.
-    if connection is None:
-        connection = sqlite3.connect("database.db")
+    connection = sqlite3.connect("database.db")
     return connection
 
 
@@ -28,8 +24,12 @@ def create_tables() -> None:
 
     cursor.execute(
         """
-        CREATE UNIQUE INDEX IF NOT EXISTS transcription_uuid_ndx ON prompt(uuid);
-        CREATE UNIQUE INDEX IF NOT EXISTS transcription_link_ndx ON prompt(link);
+        CREATE UNIQUE INDEX IF NOT EXISTS transcription_uuid_ndx ON transcription(uuid);
+    """
+    )
+    cursor.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS transcription_link_ndx ON transcription(link);
     """
     )
     connection.commit()
