@@ -21,4 +21,4 @@ def close_db(e):
 
 if __name__ == "__main__":
     db.create_tables()
-    app.run(debug=False, port=6543)
+    app.run(debug=False, port=6550)
