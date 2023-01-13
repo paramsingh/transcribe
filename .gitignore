@@ -7,3 +7,4 @@ pyvenv.cfg
 share/
 *.pyc
 __pycache__/
+database.db
