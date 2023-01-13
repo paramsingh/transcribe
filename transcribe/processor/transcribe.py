@@ -3,8 +3,8 @@ import replicate
 from pathlib import Path
 import json
 from transcribe.db.transcription import get_one_unfinished_transcription, populate_transcription
+from transcribe.db import init_db
 import schedule
-import sqlite3
 import time
 
 
@@ -50,12 +50,6 @@ class WhisperProcessor:
         output = self.version.predict(audio=Path(self.path))
         print("done with transcription for " + uuid)
         return json.dumps(output)
-
-
-def init_db() -> sqlite3.Connection:
-    # TODO: this path needs to be a config option.
-    connection = sqlite3.connect("database.db")
-    return connection
 
 
 if __name__ == '__main__':
