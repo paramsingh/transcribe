@@ -45,27 +45,26 @@ def get_transcription_by_link(db, link):
 
 def get_one_unfinished_transcription(db) -> Union[dict, None]:
     cursor = db.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT uuid, link FROM transcription WHERE result is NULL LIMIT 1;
-    """)
+    """
+    )
     result = cursor.fetchone()
 
     if result:
-        return {
-            "uuid": result[0],
-            "link": result[1]
-        }
+        return {"uuid": result[0], "link": result[1]}
     return None
 
 
 def populate_transcription(db, uuid: str, result: str) -> None:
+    """Add result to a transcription"""
     cursor = db.cursor()
-
     cursor.execute(
         """
-        INSERT INTO transcription (result) VALUES (?) WHERE uuid = ?;
+        UPDATE transcription SET result = ? WHERE uuid = ?;
     """,
-        (uuid, result),
+        (result, uuid),
     )
     db.commit()
 
