@@ -1,8 +1,8 @@
 import typing
 
 from flask_cors import cross_origin  # type: ignore
-from flask import Blueprint, jsonify, Response, request, current_app
-from transcribe.api.db_utils import get_flask_db
+from flask import Blueprint, jsonify, Response, request
+from transcribe.db.db_utils import get_flask_db
 import transcribe.db.transcription as transcription_db
 
 api_bp = Blueprint("api_v1", __name__)

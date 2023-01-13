@@ -17,10 +17,6 @@ more-itertools==9.0.0
 mutagen==1.46.0
 mypy-extensions==0.4.3
 numpy==1.24.1
-nvidia-cublas-cu11==11.10.3.66
-nvidia-cuda-nvrtc-cu11==11.7.99
-nvidia-cuda-runtime-cu11==11.7.99
-nvidia-cudnn-cu11==8.5.0.96
 packaging==22.0
 pathspec==0.10.3
 platformdirs==2.6.2
@@ -39,4 +35,5 @@ urllib3==1.26.13
 websockets==10.4
 Werkzeug==2.2.2
 yt-dlp==2023.1.6
-git+https://github.com/openai/whisper.git
+replicate==0.4.0
+schedule
