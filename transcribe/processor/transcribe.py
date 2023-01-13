@@ -2,14 +2,16 @@ import yt_dlp
 import replicate
 from pathlib import Path
 import json
-from transcribe.db.db_utils import get_flask_db
 from transcribe.db.transcription import get_one_unfinished_transcription, populate_transcription
+import schedule
+import sqlite3
+import time
 
 
 class WhisperProcessor:
     def __init__(self):
         self.path = "/tmp/audio.opus"
-        self.db = get_flask_db()
+        self.db = init_db()
         self.model = replicate.models.get("openai/whisper")
         self.version = self.model.versions.get("30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed")
 
@@ -48,3 +50,17 @@ class WhisperProcessor:
         output = self.version.predict(audio=Path(self.path))
         print("done with transcription for " + uuid)
         return json.dumps(output)
+
+
+def init_db() -> sqlite3.Connection:
+    # TODO: this path needs to be a config option.
+    connection = sqlite3.connect("database.db")
+    return connection
+
+
+if __name__ == '__main__':
+    processor = WhisperProcessor()
+    schedule.every(1).minutes.do(processor.process())
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
