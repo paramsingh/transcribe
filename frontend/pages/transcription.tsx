@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "@next/font/google";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
-import { resourceLimits } from "worker_threads";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,6 +11,7 @@ export default function Transcription() {
   const [link, setLink] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
+  const [result, setResult] = useState<any>(null); // TODO: type this
 
   const listenForResults = (id: string) => {
     console.log("listening for results");
@@ -21,10 +21,18 @@ export default function Transcription() {
     getDetailsForUUID(id).then((data) => {
       if (data["result"]) {
         console.log("have data", data);
-        clearInterval(listenID); // TODO (param): this isn't working rn for some reason
+        console.log("listen ID", listenID);
+        setResult(data["result"]);
       }
     });
   };
+
+  useEffect(() => {
+    if (result) {
+      console.log("clearing interval");
+      clearInterval(listenID);
+    }
+  }, [result, listenID]);
 
   const submit = () => {
     if (!link.includes("youtube.com")) {
@@ -36,7 +44,9 @@ export default function Transcription() {
     submitLink(link).then((data) => {
       console.log("submitted successfully!", data);
       console.log(data.id);
-      const id = setInterval(() => listenForResults(data.id), 5 * 1000);
+      const id = setInterval(() => {
+        listenForResults(data.id);
+      }, 5 * 1000);
       setListenID(id);
     });
   };
