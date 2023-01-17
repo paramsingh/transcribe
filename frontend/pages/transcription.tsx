@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "@next/font/google";
+import { Spinner, Box, Heading, Input, Button, Text } from "@chakra-ui/react";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
 
@@ -35,6 +36,7 @@ export default function Transcription() {
   }, [result, listenID]);
 
   const submit = () => {
+    setResult(null);
     if (!link.includes("youtube.com")) {
       alert("not a youtube link, try again!");
       return;
@@ -62,12 +64,32 @@ export default function Transcription() {
       </Head>
       <main>
         <div>
-          <h1>Youtube link</h1>
-          <p>Enter a link for us to transcribe.</p>
-          <input type="text" onChange={(e) => setLink(e.target.value)} />
-          <input type="button" onClick={(e) => submit()} value="Submit" />
-          {submitted && <p>Submitted, please wait for results!</p>}
-          {result && <div>{result.transcription}</div>}
+          <Heading as={"h1"} size="3xl">
+            Youtube link
+          </Heading>
+          <Box paddingTop={10} paddingBottom={10}>
+            <Heading as={"h5"}>Enter a link for us to transcribe.</Heading>
+          </Box>
+          <Box paddingBottom={10}>
+            <Input size="lg" onChange={(e) => setLink(e.target.value)} />
+          </Box>
+          <Button colorScheme={"blue"} onClick={(e) => submit()}>
+            Submit
+          </Button>
+          {submitted && !result && (
+            <Box paddingTop={10}>
+              <Text>Please wait for a transcription</Text>
+              <Spinner />
+            </Box>
+          )}
+          {result && (
+            <Box paddingTop={10}>
+              <Heading as={"h3"} size="xl">
+                Transcription
+              </Heading>
+              <Text paddingTop={4}>{result.transcription}</Text>
+            </Box>
+          )}
         </div>
       </main>
     </>
