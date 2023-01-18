@@ -5,6 +5,7 @@ import { Inter } from "@next/font/google";
 import { Spinner, Box, Heading, Input, Button, Text } from "@chakra-ui/react";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
+import { validateUrl } from "../utils/validateUrl";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,7 +38,7 @@ export default function Transcription() {
 
   const submit = () => {
     setResult(null);
-    if (!link.includes("youtube.com")) {
+    if (!validateUrl(link)) {
       alert("not a youtube link, try again!");
       return;
     }
