@@ -6,6 +6,7 @@ import { Spinner, Box, Heading, Input, Button, Text } from "@chakra-ui/react";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
+import { NextRequest, NextResponse } from "next/server";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,7 +16,7 @@ export default function Transcription() {
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
   const [result, setResult] = useState<any>(null); // TODO: type this
 
-  const listenForResults = (id: string) => {
+  const listenForResults = (id: string, request: NextRequest) => {
     console.debug("listening for results");
     if (!id) return;
     console.debug("have uuid");
@@ -25,6 +26,9 @@ export default function Transcription() {
         console.debug("have data", data);
         console.debug("listen ID", listenID);
         setResult(JSON.parse(data["result"]));
+        const url = request.nextUrl.clone()
+
+        NextResponse.redirect("/result/" + id);
       }
     });
   };
