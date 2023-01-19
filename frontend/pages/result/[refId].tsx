@@ -18,8 +18,6 @@ export default function TranscriptionResult({ id }) {
             if (data["result"]) {
                 console.debug("have data", data);
                 setTranscriptionResult(JSON.parse(data["result"]));
-            } else {
-                setTranscriptionResult("Transcription still in progress...!")
             }
         });
 
@@ -46,7 +44,7 @@ export default function TranscriptionResult({ id }) {
                         </Box>
                     }
                     {transcriptionResult &&
-                        <aside>{transcriptionResult}</aside>
+                        <p>{transcriptionResult.transcription}</p>
                     }
                 </section>
             </main>
