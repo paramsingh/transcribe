@@ -6,7 +6,7 @@ import { Spinner, Box, Heading, Input, Button, Text } from "@chakra-ui/react";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
-import { NextRequest, NextResponse } from "next/server";
+import { useRouter } from "next/router";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,9 +14,10 @@ export default function Transcription() {
   const [link, setLink] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
-  const [result, setResult] = useState<any>(null); // TODO: type this
+  const [waiting, setWaiting] = useState<boolean>(true);
+  const { push } = useRouter();
 
-  const listenForResults = (id: string, request: NextRequest) => {
+  const listenForResults = (id: string) => {
     console.debug("listening for results");
     if (!id) return;
     console.debug("have uuid");
@@ -25,23 +26,19 @@ export default function Transcription() {
       if (data["result"]) {
         console.debug("have data", data);
         console.debug("listen ID", listenID);
-        setResult(JSON.parse(data["result"]));
-        const url = request.nextUrl.clone()
-
-        NextResponse.redirect("/result/" + id);
+        setWaiting(false);
+        push(`/result/${id}`);
       }
     });
   };
 
   useEffect(() => {
-    if (result) {
-      console.debug("clearing interval");
+    if (!waiting) {
       clearInterval(listenID);
     }
-  }, [result, listenID]);
+  }, [waiting, listenID]);
 
   const submit = () => {
-    setResult(null);
     if (!validateUrl(link)) {
       alert("not a youtube link, try again!");
       return;
@@ -81,18 +78,10 @@ export default function Transcription() {
           <Button colorScheme={"blue"} onClick={(e) => submit()}>
             Submit
           </Button>
-          {submitted && !result && (
+          {submitted && (
             <Box paddingTop={10}>
               <Text fontSize="2xl">Please wait for a transcription</Text>
               <Spinner />
-            </Box>
-          )}
-          {result && (
-            <Box paddingTop={10}>
-              <Heading as={"h3"} size="xl">
-                Transcription
-              </Heading>
-              <Text paddingTop={4}>{result.transcription}</Text>
             </Box>
           )}
         </div>
