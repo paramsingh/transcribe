@@ -19,6 +19,9 @@ class Improver:
         """Get an unimproved transcription from the database and improve it."""
 
         unimproved = get_one_unimproved_transcription(self.db)
+        if not unimproved:
+            print("nothing to do in this cycle!")
+            return
         print("improving transcription with link: ", unimproved["link"])
         result = json.loads(unimproved["result"])
         improved_text = self.improve_text(result["transcription"])
