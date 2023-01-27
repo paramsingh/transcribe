@@ -21,10 +21,8 @@ class Improver:
         unimproved = get_one_unimproved_transcription(self.db)
         print("improving transcription with link: ", unimproved["link"])
         result = json.loads(unimproved["result"])
-        print("unimproved: ", result["transcription"])
         improved_text = self.improve_text(result["transcription"])
         add_improvement(self.db, improved_text, unimproved["uuid"])
-        print("improved text:\n", improved_text)
 
     def improve_text(self, raw: str) -> str:
         words = raw.split()
@@ -48,7 +46,6 @@ Transcript:
 
 Improved transcript:
             """
-            print(prompt)
             print("Making API call to GPT-3")
             # send text to GPT-3 and get back improved text
             response = openai.Completion.create(
