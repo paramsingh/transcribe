@@ -2,7 +2,17 @@ import { getDetailsForUUID } from "../../client/api-client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { Box, Button, Heading, Spinner } from "@chakra-ui/react";
+import {
+  Text,
+  Alert,
+  AlertIcon,
+  Box,
+  Button,
+  Heading,
+  Link,
+  Spinner,
+} from "@chakra-ui/react";
+import { Transcription } from "../../components/Transcription";
 
 export default function TranscriptionResult() {
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null); // TODO: type this
@@ -28,6 +38,12 @@ export default function TranscriptionResult() {
     }
   }, [refId, waiting]);
 
+  useEffect(() => {
+    if (improvement) {
+      setShowImprovement(true);
+    }
+  }, [improvement]);
+
   return (
     <>
       <Head>
@@ -49,32 +65,38 @@ export default function TranscriptionResult() {
               </Heading>
             </Box>
           )}
+          {/*** TODO: think about hiding this entirely */}
+          {!waiting && transcriptionResult && !improvement && (
+            <Alert status="info">
+              <AlertIcon />
+              We&lsquo;re working on improving this transcription. Please check
+              again later.
+            </Alert>
+          )}
           {!waiting && transcriptionResult && improvement && (
-            <Box paddingTop={10} paddingBottom={10}>
-              <Button onClick={() => setShowImprovement(false)}>
-                Original
-              </Button>
-              <Button onClick={() => setShowImprovement(true)}>
-                Improvement
-              </Button>
-            </Box>
+            <Alert status="success" style={{ marginBottom: "20px" }}>
+              {showImprovement ? (
+                <Text>
+                  This is a GPT-3 enhanced version of the transcription. Click{" "}
+                  <Link onClick={() => setShowImprovement(false)}>here</Link> to
+                  see the original.
+                </Text>
+              ) : (
+                <Text>
+                  There is an improved version of this transcription available.
+                  Click{" "}
+                  <Link onClick={() => setShowImprovement(true)}>here</Link> to
+                  see it.
+                </Text>
+              )}
+            </Alert>
           )}
           {!waiting && transcriptionResult && !showImprovement && (
-            <div style={{ whiteSpace: "pre-line" }}>
-              <Heading as={"h1"} size="3xl">
-                Transcription
-              </Heading>
-              <p>{transcriptionResult.transcription}</p>
-            </div>
+            <Transcription text={transcriptionResult.transcription} />
           )}
           <br />
           {!waiting && improvement && showImprovement && (
-            <div style={{ whiteSpace: "pre-line" }}>
-              <Heading as={"h1"} size="3xl">
-                Improvement
-              </Heading>
-              <p>{improvement}</p>
-            </div>
+            <Transcription text={improvement} />
           )}
         </section>
       </main>
