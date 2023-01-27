@@ -8,7 +8,7 @@ def get_transcription(db, uuid: str) -> Union[dict, None]:
 
     cursor.execute(
         """
-        SELECT uuid, link, result FROM transcription WHERE uuid = ?;
+        SELECT uuid, link, result, improvement FROM transcription WHERE uuid = ?;
     """,
         (uuid,),
     )
@@ -19,6 +19,7 @@ def get_transcription(db, uuid: str) -> Union[dict, None]:
             "uuid": result[0],
             "link": result[1],
             "result": result[2],
+            "improvement": result[3],
         }
     return None
 
