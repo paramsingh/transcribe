@@ -13,12 +13,14 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { Transcription } from "../../components/Transcription";
+import YouTube from "react-youtube";
 
 export default function TranscriptionResult() {
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null); // TODO: type this
   const [improvement, setImprovement] = useState<string>("");
   const [waiting, setWaiting] = useState<boolean>(true);
   const [showImprovement, setShowImprovement] = useState<boolean>(false);
+  const [link, setLink] = useState<string>("");
   const router = useRouter();
   const refId = router.query.refId as string;
 
@@ -29,7 +31,7 @@ export default function TranscriptionResult() {
       console.debug("sending request");
       getDetailsForUUID(refId).then((data) => {
         if (data["result"]) {
-          console.debug("have data", data);
+          setLink(data["link"]);
           setTranscriptionResult(JSON.parse(data["result"]));
           setImprovement(data["improvement"]);
           setWaiting(false);
@@ -57,7 +59,6 @@ export default function TranscriptionResult() {
         <section>
           {/*<header><h2>{refId}</h2></header>*/}
           {waiting && <Spinner />}
-
           {!waiting && !transcriptionResult && (
             <Box paddingTop={10} paddingBottom={10}>
               <Heading as={"h5"}>
@@ -90,6 +91,14 @@ export default function TranscriptionResult() {
                 </Text>
               )}
             </Alert>
+          )}
+          {!waiting && link && (
+            <Box
+              as="iframe"
+              src={`https://youtube.com/embed/${link.split("=")[1]}`}
+              style={{ width: "80%", marginBottom: "20px" }}
+              sx={{ aspectRatio: "16 / 9" }}
+            />
           )}
           {!waiting && transcriptionResult && !showImprovement && (
             <Transcription text={transcriptionResult.transcription} />
