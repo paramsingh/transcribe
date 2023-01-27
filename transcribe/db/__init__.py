@@ -17,7 +17,8 @@ def create_tables() -> None:
             uuid            TEXT NOT NULL,
             link            TEXT NOT NULL,
             result          TEXT,
-            created         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            improvement     TEXT
         );
     """
     )

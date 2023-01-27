@@ -10,3 +10,4 @@ __pycache__/
 database.db
 transcribe/node_modules/
 transcribe/package-lock.json
+config.py
