@@ -10,6 +10,8 @@ import json
 import schedule
 import time
 
+WORD_GROUP_SIZE = 1000
+
 
 class Improver:
     def __init__(self):
@@ -26,12 +28,16 @@ class Improver:
         result = json.loads(unimproved["result"])
         improved_text = self.improve_text(result["transcription"])
         add_improvement(self.db, improved_text, unimproved["uuid"])
+        print("Done improving transcription with link: ", unimproved["link"])
 
     def improve_text(self, raw: str) -> str:
         words = raw.split()
 
-        # create groups of 500 words to send to GPT-3
-        word_groups = [words[i : i + 1000] for i in range(0, len(words), 1000)]
+        # create groups of words to send to GPT-3
+        word_groups = [
+            words[i : i + WORD_GROUP_SIZE]
+            for i in range(0, len(words), WORD_GROUP_SIZE)
+        ]
         print("Number of word groups: ", len(word_groups))
         print("Number of words: ", len(words))
 
@@ -39,7 +45,6 @@ class Improver:
         results = []
 
         for word_group in word_groups:
-
             text = " ".join(word_group)
             prompt = f"""Format the text from the transcript of a youtube video to add paragraphing, punctuations and capitalization. Also, remove any typos. Do NOT paraphrase or remove any sentences, only change the format and remove errors.
 
@@ -54,13 +59,13 @@ Improved transcript:
             response = openai.Completion.create(
                 engine="text-davinci-003",
                 prompt=prompt,
-                temperature=0.9,
+                temperature=0.5,
                 max_tokens=len(word_group) + 100,
                 top_p=1,
                 frequency_penalty=0,
                 presence_penalty=0.6,
             )
-            print("done")
+            print("Done!")
             results.append(response.choices[0].text)
         return "\n".join(results)
 
