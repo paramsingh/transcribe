@@ -2,11 +2,13 @@ import { getDetailsForUUID } from "../../client/api-client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { Box, Heading, Spinner } from "@chakra-ui/react";
+import { Box, Button, Heading, Spinner } from "@chakra-ui/react";
 
 export default function TranscriptionResult() {
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null); // TODO: type this
+  const [improvement, setImprovement] = useState<string>("");
   const [waiting, setWaiting] = useState<boolean>(true);
+  const [showImprovement, setShowImprovement] = useState<boolean>(false);
   const router = useRouter();
   const refId = router.query.refId as string;
 
@@ -19,6 +21,7 @@ export default function TranscriptionResult() {
         if (data["result"]) {
           console.debug("have data", data);
           setTranscriptionResult(JSON.parse(data["result"]));
+          setImprovement(data["improvement"]);
           setWaiting(false);
         }
       });
@@ -38,6 +41,7 @@ export default function TranscriptionResult() {
         <section>
           {/*<header><h2>{refId}</h2></header>*/}
           {waiting && <Spinner />}
+
           {!waiting && !transcriptionResult && (
             <Box paddingTop={10} paddingBottom={10}>
               <Heading as={"h5"}>
@@ -45,8 +49,32 @@ export default function TranscriptionResult() {
               </Heading>
             </Box>
           )}
-          {!waiting && transcriptionResult && (
-            <p>{transcriptionResult.transcription}</p>
+          {!waiting && transcriptionResult && improvement && (
+            <Box paddingTop={10} paddingBottom={10}>
+              <Button onClick={() => setShowImprovement(false)}>
+                Original
+              </Button>
+              <Button onClick={() => setShowImprovement(true)}>
+                Improvement
+              </Button>
+            </Box>
+          )}
+          {!waiting && transcriptionResult && !showImprovement && (
+            <div style={{ whiteSpace: "pre-line" }}>
+              <Heading as={"h1"} size="3xl">
+                Transcription
+              </Heading>
+              <p>{transcriptionResult.transcription}</p>
+            </div>
+          )}
+          <br />
+          {!waiting && improvement && showImprovement && (
+            <div style={{ whiteSpace: "pre-line" }}>
+              <Heading as={"h1"} size="3xl">
+                Improvement
+              </Heading>
+              <p>{improvement}</p>
+            </div>
           )}
         </section>
       </main>

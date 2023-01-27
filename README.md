@@ -31,6 +31,8 @@ curl --header "Content-Type: application/json" \
 
 https://transcribe.param.codes/api/v1/transcription/331118e7-8b4a-4e7f-bfe0-0cc5cec2a974/details
 
+http://localhost:6550/api/v1/transcription/b59803b8-ef45-47fc-9c5a-8343df208179/details
+
 
 # Frontend dev
 
