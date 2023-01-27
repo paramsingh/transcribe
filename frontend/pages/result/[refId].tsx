@@ -78,14 +78,15 @@ export default function TranscriptionResult() {
             <Alert status="success" style={{ marginBottom: "20px" }}>
               {showImprovement ? (
                 <Text>
-                  This is a GPT-3 enhanced version of the transcription. Click{" "}
+                  This is a GPT-3 enhanced version of the transcription ✨.
+                  Click{" "}
                   <Link onClick={() => setShowImprovement(false)}>here</Link> to
                   see the original.
                 </Text>
               ) : (
                 <Text>
-                  There is an improved version of this transcription available.
-                  Click{" "}
+                  There is an improved ✨ version of this transcription
+                  available. Click{" "}
                   <Link onClick={() => setShowImprovement(true)}>here</Link> to
                   see it.
                 </Text>
