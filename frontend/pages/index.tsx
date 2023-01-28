@@ -2,11 +2,21 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "@next/font/google";
-import { Spinner, Box, Heading, Input, Button, Text } from "@chakra-ui/react";
+import {
+  Spinner,
+  Box,
+  Heading,
+  Input,
+  Button,
+  Text,
+  Flex,
+  Spacer,
+} from "@chakra-ui/react";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
 import { useRouter } from "next/router";
+import scriber from "../static/scriber.png";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,9 +76,18 @@ export default function Transcription() {
       </Head>
       <main>
         <div>
-          <Heading as={"h1"} size="3xl" paddingBottom={10}>
-            Youtube Transcriber
-          </Heading>
+          <Flex direction="row">
+            <Heading as={"h1"} size="3xl" paddingBottom={10}>
+              Youtube Transcriber
+            </Heading>
+            <Spacer></Spacer>
+            <Image
+              src={scriber}
+              alt="scriber"
+              style={{ maxHeight: "100px", maxWidth: "100px" }}
+            />
+          </Flex>
+
           <Heading as={"h2"} size="xl">
             Transcribe your favorite YouTube videos using the magic of AI.
           </Heading>
