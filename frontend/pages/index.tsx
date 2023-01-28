@@ -80,7 +80,7 @@ export default function Transcription() {
           </Button>
           {submitted && (
             <Box paddingTop={10}>
-              <Text fontSize="2xl">Please wait for a transcription, we'll redirect you when it's ready.</Text>
+              <Text fontSize="2xl">Please wait for a transcription, we&lsquo;ll redirect you when it&lsquo;s ready.</Text>
               <Spinner />
             </Box>
           )}
