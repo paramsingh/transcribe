@@ -67,10 +67,10 @@ export default function Transcription() {
       <main>
         <div>
           <Heading as={"h1"} size="3xl">
-            Youtube link
+            Youtube Transcriber
           </Heading>
           <Box paddingTop={10} paddingBottom={10}>
-            <Heading as={"h5"}>Enter a link for us to transcribe.</Heading>
+            <Heading as={"h5"}>Enter a YouTube link for us to transcribe.</Heading>
           </Box>
           <Box paddingBottom={10}>
             <Input size="lg" onChange={(e) => setLink(e.target.value)} />
@@ -80,7 +80,7 @@ export default function Transcription() {
           </Button>
           {submitted && (
             <Box paddingTop={10}>
-              <Text fontSize="2xl">Please wait for a transcription</Text>
+              <Text fontSize="2xl">Please wait for a transcription, we'll redirect you when it's ready.</Text>
               <Spinner />
             </Box>
           )}
