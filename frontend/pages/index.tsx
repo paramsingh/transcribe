@@ -66,21 +66,37 @@ export default function Transcription() {
       </Head>
       <main>
         <div>
-          <Heading as={"h1"} size="3xl">
+          <Heading as={"h1"} size="3xl" paddingBottom={10}>
             Youtube Transcriber
           </Heading>
+          <Heading as={"h2"} size="xl">
+            Transcribe your favorite YouTube videos using the magic of AI.
+          </Heading>
           <Box paddingTop={10} paddingBottom={10}>
-            <Heading as={"h5"}>Enter a YouTube link for us to transcribe.</Heading>
+            <Heading as={"h5"}>
+              Enter a YouTube link for us to transcribe.
+            </Heading>
           </Box>
           <Box paddingBottom={10}>
-            <Input size="lg" onChange={(e) => setLink(e.target.value)} />
+            <Input
+              size="lg"
+              onChange={(e) => setLink(e.target.value)}
+              disabled={submitted}
+            />
           </Box>
-          <Button colorScheme={"blue"} onClick={(e) => submit()}>
+          <Button
+            colorScheme={"blue"}
+            onClick={(e) => submit()}
+            disabled={submitted}
+          >
             Submit
           </Button>
           {submitted && (
             <Box paddingTop={10}>
-              <Text fontSize="2xl">Please wait for a transcription, we&lsquo;ll redirect you when it&lsquo;s ready.</Text>
+              <Text fontSize="2xl">
+                Please wait for a transcription, we&lsquo;ll redirect you when
+                it&lsquo;s ready.
+              </Text>
               <Spinner />
             </Box>
           )}
