@@ -8,7 +8,7 @@ def get_transcription(db, uuid: str) -> Union[dict, None]:
 
     cursor.execute(
         """
-        SELECT uuid, link, result, improvement FROM transcription WHERE uuid = ?;
+        SELECT uuid, link, result, improvement, summary FROM transcription WHERE uuid = ?;
     """,
         (uuid,),
     )
@@ -20,6 +20,7 @@ def get_transcription(db, uuid: str) -> Union[dict, None]:
             "link": result[1],
             "result": result[2],
             "improvement": result[3],
+            "summary": result[4],
         }
     return None
 
@@ -62,9 +63,9 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT uuid, link, result
+        SELECT uuid, link, result, improvement, summary
           FROM transcription
-         WHERE improvement is NULL
+         WHERE (improvement is NULL OR summary IS NULL)
            AND result is NOT NULL
       ORDER BY created ASC
          LIMIT 1;
@@ -77,6 +78,8 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
             "uuid": result[0],
             "link": result[1],
             "result": result[2],
+            "improvement": result[3],
+            "summary": result[4],
         }
     return None
 
@@ -89,6 +92,18 @@ def add_improvement(db, improved_text: str, uuid: str) -> None:
         UPDATE transcription SET improvement = ? WHERE uuid = ?;
     """,
         (improved_text, uuid),
+    )
+    db.commit()
+
+
+def add_summary(db, summary: str, uuid: str) -> None:
+    """Add summary to the summary column for transcription with given UUID"""
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        UPDATE transcription SET summary = ? WHERE uuid = ?;
+    """,
+        (summary, uuid),
     )
     db.commit()
 
