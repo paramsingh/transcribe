@@ -76,7 +76,7 @@ export default function Transcription() {
       </Head>
       <main>
         <div>
-          <Flex direction="row">
+          <Flex direction="row" paddingBottom={10}>
             <Heading as={"h1"} size="3xl" paddingBottom={10}>
               Youtube Transcriber
             </Heading>
@@ -88,19 +88,15 @@ export default function Transcription() {
             />
           </Flex>
 
-          <Heading as={"h2"} size="xl">
+          <Heading as={"h2"} size="xl" paddingBottom={10}>
             Transcribe your favorite YouTube videos using the magic of AI.
           </Heading>
-          <Box paddingTop={10} paddingBottom={10}>
-            <Heading as={"h5"}>
-              Enter a YouTube link for us to transcribe.
-            </Heading>
-          </Box>
           <Box paddingBottom={10}>
             <Input
               size="lg"
               onChange={(e) => setLink(e.target.value)}
               disabled={submitted}
+              placeholder={"Enter a YouTube link for us to transcribe."}
             />
           </Box>
           <Button
@@ -108,7 +104,14 @@ export default function Transcription() {
             onClick={(e) => submit()}
             disabled={submitted}
           >
-            Submit
+            {!submitted ? (
+              "Submit"
+            ) : (
+              <>
+                <span style={{ paddingRight: "5px" }}>Transcribing</span>{" "}
+                <Spinner size="sm" />
+              </>
+            )}
           </Button>
           {submitted && (
             <Box paddingTop={10}>
@@ -116,7 +119,6 @@ export default function Transcription() {
                 Please wait for a transcription, we&lsquo;ll redirect you when
                 it&lsquo;s ready.
               </Text>
-              <Spinner />
             </Box>
           )}
         </div>
