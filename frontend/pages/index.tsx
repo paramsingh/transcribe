@@ -8,10 +8,18 @@ import {
   Heading,
   Input,
   Button,
-  Text,
   Flex,
-  Spacer,
+  IconButton,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverHeader,
+  Portal,
 } from "@chakra-ui/react";
+import InfoIcon from "@chakra-ui/icon";
 import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
@@ -87,7 +95,7 @@ export default function Transcription() {
             </Heading>
           </Flex>
 
-          <Heading as={"h2"} size="xl" paddingBottom={10}>
+          <Heading as={"h2"} size="md" paddingBottom={10}>
             Transcribe your favorite YouTube videos using the magic of AI.
           </Heading>
           <Box paddingBottom={10}>
@@ -98,28 +106,38 @@ export default function Transcription() {
               placeholder={"Enter a YouTube link for us to transcribe."}
             />
           </Box>
-          <Button
-            colorScheme={"blue"}
-            onClick={(e) => submit()}
-            disabled={submitted}
-          >
-            {!submitted ? (
-              "Submit"
-            ) : (
-              <>
-                <span style={{ paddingRight: "5px" }}>Transcribing</span>{" "}
-                <Spinner size="sm" />
-              </>
+          <Box paddingBottom={100}>
+            <Button
+              colorScheme={"blue"}
+              onClick={(e) => submit()}
+              isLoading={submitted}
+              loadingText={"Transcribing"}
+            >
+              Submit
+            </Button>
+            {submitted && (
+              <Popover>
+                <PopoverTrigger>
+                  <IconButton
+                    icon={<InfoIcon />}
+                    aria-label="info"
+                    marginLeft={2}
+                  />
+                </PopoverTrigger>
+                <Portal>
+                  <PopoverContent>
+                    <PopoverArrow />
+                    <PopoverCloseButton />
+                    <PopoverHeader>Note</PopoverHeader>
+                    <PopoverBody>
+                      We will redirect you to the transcription when it is
+                      ready, it may take some time.
+                    </PopoverBody>
+                  </PopoverContent>
+                </Portal>
+              </Popover>
             )}
-          </Button>
-          {submitted && (
-            <Box paddingTop={10}>
-              <Text fontSize="2xl">
-                Please wait for a transcription, we&lsquo;ll redirect you when
-                it&lsquo;s ready.
-              </Text>
-            </Box>
-          )}
+          </Box>
         </div>
       </main>
     </>
