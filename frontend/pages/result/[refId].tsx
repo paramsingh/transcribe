@@ -15,11 +15,17 @@ import {
 import { Transcription } from "../../components/Transcription";
 import YouTube from "react-youtube";
 
+enum DataType {
+  TRANSCRIPTION = "TRANSCRIPTION",
+  IMPROVEMENT = "IMPROVEMENT",
+}
+
 export default function TranscriptionResult() {
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null); // TODO: type this
   const [improvement, setImprovement] = useState<string>("");
   const [waiting, setWaiting] = useState<boolean>(true);
-  const [showImprovement, setShowImprovement] = useState<boolean>(false);
+  const [showData, setShowData] = useState<DataType>(DataType.TRANSCRIPTION);
+  const [summary, setSummary] = useState<string>("");
   const [link, setLink] = useState<string>("");
   const router = useRouter();
   const refId = router.query.refId as string;
@@ -31,6 +37,7 @@ export default function TranscriptionResult() {
           setLink(data["link"]);
           setTranscriptionResult(JSON.parse(data["result"]));
           setImprovement(data["improvement"]);
+          setSummary(data["summary"]);
           setWaiting(false);
         }
       });
@@ -39,7 +46,7 @@ export default function TranscriptionResult() {
 
   useEffect(() => {
     if (improvement) {
-      setShowImprovement(true);
+      setShowData(DataType.IMPROVEMENT);
     }
   }, [improvement]);
 
@@ -73,19 +80,23 @@ export default function TranscriptionResult() {
           )}
           {!waiting && transcriptionResult && improvement && (
             <Alert status="success" style={{ marginBottom: "20px" }}>
-              {showImprovement ? (
+              {showData == DataType.IMPROVEMENT ? (
                 <Text>
                   This is a GPT-3 enhanced version of the transcription ✨.
                   Click{" "}
-                  <Link onClick={() => setShowImprovement(false)}>here</Link> to
-                  see the original.
+                  <Link onClick={() => setShowData(DataType.TRANSCRIPTION)}>
+                    here
+                  </Link>{" "}
+                  to see the original.
                 </Text>
               ) : (
                 <Text>
                   There is an improved ✨ version of this transcription
                   available. Click{" "}
-                  <Link onClick={() => setShowImprovement(true)}>here</Link> to
-                  see it.
+                  <Link onClick={() => setShowData(DataType.IMPROVEMENT)}>
+                    here
+                  </Link>{" "}
+                  to see it.
                 </Text>
               )}
             </Alert>
@@ -98,12 +109,20 @@ export default function TranscriptionResult() {
               sx={{ aspectRatio: "16 / 9" }}
             />
           )}
-          {!waiting && transcriptionResult && !showImprovement && (
-            <Transcription text={transcriptionResult.transcription} />
+          {!waiting && summary && (
+            <Transcription text={summary} heading="Summary" />
           )}
+          {!waiting &&
+            transcriptionResult &&
+            showData == DataType.TRANSCRIPTION && (
+              <Transcription
+                heading="Transcription"
+                text={transcriptionResult.transcription}
+              />
+            )}
           <br />
-          {!waiting && improvement && showImprovement && (
-            <Transcription text={improvement} />
+          {!waiting && improvement && showData == DataType.IMPROVEMENT && (
+            <Transcription text={improvement} heading="Transcription" />
           )}
         </section>
       </main>

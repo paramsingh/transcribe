@@ -1,10 +1,16 @@
 import { Heading } from "@chakra-ui/react";
 
-export const Transcription = ({ text }: { text: string }) => {
+export const Transcription = ({
+  heading,
+  text,
+}: {
+  heading: string;
+  text: string;
+}) => {
   return (
     <div style={{ whiteSpace: "pre-line" }}>
-      <Heading as={"h1"} size="3xl" style={{marginBottom: "10px"}}>
-        Transcription
+      <Heading as={"h1"} size="xl" style={{ marginBottom: "10px" }}>
+        {heading}
       </Heading>
       <p>{text}</p>
     </div>
