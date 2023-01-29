@@ -24,7 +24,7 @@ import styles from "../styles/Home.module.css";
 import { getDetailsForUUID, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
 import { useRouter } from "next/router";
-import scriber from "../static/scriber.png";
+import scriber from "../public/scriber.png";
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -26,9 +26,6 @@ export default function TranscriptionResult() {
 
   useEffect(() => {
     if (waiting && refId) {
-      console.info("Trying to get results for " + refId);
-      console.debug("have uuid");
-      console.debug("sending request");
       getDetailsForUUID(refId).then((data) => {
         if (data["result"]) {
           setLink(data["link"]);
