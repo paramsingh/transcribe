@@ -78,7 +78,7 @@ export default function Transcription() {
         <div>
           <Flex direction="row" paddingBottom={10}>
             <Heading as={"h1"} size="3xl" paddingBottom={10}>
-              Youtube Transcriber
+              Scriber
             </Heading>
             <Spacer></Spacer>
             <Image
