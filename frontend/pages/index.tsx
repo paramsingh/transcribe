@@ -76,16 +76,15 @@ export default function Transcription() {
       </Head>
       <main>
         <div>
-          <Flex direction="row" paddingBottom={10}>
-            <Heading as={"h1"} size="3xl" paddingBottom={10}>
-              Scriber
-            </Heading>
-            <Spacer></Spacer>
+          <Flex direction="row" paddingBottom={10} alignItems="center">
             <Image
               src={scriber}
               alt="scriber"
               style={{ maxHeight: "100px", maxWidth: "100px" }}
             />
+            <Heading as={"h1"} size="3xl" paddingLeft={10}>
+              Scriber
+            </Heading>
           </Flex>
 
           <Heading as={"h2"} size="xl" paddingBottom={10}>
