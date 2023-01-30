@@ -14,6 +14,8 @@ import time
 
 WORD_GROUP_SIZE = 1000
 
+DAVINCI_MAX_TOKENS = 4097
+
 
 class Improver:
     def __init__(self):
@@ -60,7 +62,7 @@ class Improver:
             engine="text-davinci-003",
             prompt=prompt,
             temperature=0.5,
-            max_tokens=max_tokens,
+            max_tokens=min(DAVINCI_MAX_TOKENS, max_tokens),
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0.6,
