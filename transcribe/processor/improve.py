@@ -21,6 +21,9 @@ class Improver:
     def __init__(self):
         self.db = init_db()
 
+    def get_token_count(self, string):
+        return len(string) // 4
+
     def improve_one_transcription(self):
         """Get an unimproved transcription from the database and improve it."""
 
@@ -58,7 +61,7 @@ class Improver:
         return word_groups
 
     def make_openai_request(self, prompt: str, max_tokens: int) -> str:
-        prompt_size = len(prompt.split())
+        prompt_size = self.get_token_count(prompt)
         if max_tokens + prompt_size > DAVINCI_MAX_TOKENS:
             max_tokens = DAVINCI_MAX_TOKENS - prompt_size
         response = openai.Completion.create(
@@ -78,7 +81,7 @@ class Improver:
         for word_group in word_groups:
             text = " ".join(word_group)
             result = self.make_openai_request(
-                prompt.format(text=text), len(word_group) + 500)
+                prompt.format(text=text), self.get_token_count(text) + 100)
             results.append(result)
         return "\n".join(results)
 
