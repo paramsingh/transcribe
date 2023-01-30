@@ -1,5 +1,6 @@
 import yt_dlp
 import replicate
+from transcribe.config import REPLICATE_API_KEY
 from pathlib import Path
 import json
 from transcribe.db.transcription import (
@@ -14,7 +15,8 @@ import time
 class WhisperProcessor:
     def __init__(self):
         self.db = init_db()
-        self.model = replicate.models.get("openai/whisper")
+        client = replicate.Client(api_token=REPLICATE_API_KEY)
+        self.model = client.models.get("openai/whisper")
         self.version = self.model.versions.get(
             "30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed"
         )

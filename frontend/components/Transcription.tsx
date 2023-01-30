@@ -8,7 +8,7 @@ export const Transcription = ({
   text: string;
 }) => {
   return (
-    <div style={{ whiteSpace: "pre-line" }}>
+    <div style={{ whiteSpace: "pre-line", marginBottom: "10px" }}>
       <Heading as={"h1"} size="xl" style={{ marginBottom: "10px" }}>
         {heading}
       </Heading>
