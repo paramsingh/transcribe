@@ -67,6 +67,7 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
           FROM transcription
          WHERE (improvement is NULL OR summary IS NULL)
            AND result is NOT NULL
+           AND improvement_failed = 0
       ORDER BY created ASC
          LIMIT 1;
     """
@@ -92,6 +93,18 @@ def add_improvement(db, improved_text: str, uuid: str) -> None:
         UPDATE transcription SET improvement = ? WHERE uuid = ?;
     """,
         (improved_text, uuid),
+    )
+    db.commit()
+
+
+def mark_improvement_failed(db, uuid: str) -> None:
+    """Mark transcription as failed improvement"""
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        UPDATE transcription SET improvement_failed = 1 WHERE uuid = ?;
+    """,
+        (uuid,),
     )
     db.commit()
 

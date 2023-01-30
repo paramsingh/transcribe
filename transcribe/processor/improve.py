@@ -6,6 +6,7 @@ from transcribe.db.transcription import (
     get_one_unimproved_transcription,
     add_improvement,
     add_summary,
+    mark_improvement_failed
 )
 import openai
 import json
@@ -35,17 +36,27 @@ class Improver:
         result = json.loads(unimproved["result"])
         if not unimproved["improvement"]:
             print("Improving...")
-            improved_text = self.improve_text(result["transcription"])
-            add_improvement(self.db, improved_text, unimproved["uuid"])
-            print("Done improving!")
+            try:
+                improved_text = self.improve_text(result["transcription"])
+                add_improvement(self.db, improved_text, unimproved["uuid"])
+                print("Done improving!")
+            except Exception as e:
+                print("Improvement failed with error: ", e)
+                mark_improvement_failed(self.db, unimproved["uuid"])
+                return
         else:
             print("improvement already exists, skipping improvement step")
 
         if not unimproved["summary"]:
             print("Summarizing...")
-            summary = self.summarize_text(result["transcription"])
-            add_summary(self.db, summary, unimproved["uuid"])
-            print("Done summarizing!")
+            try:
+                summary = self.summarize_text(result["transcription"])
+                add_summary(self.db, summary, unimproved["uuid"])
+                print("Done summarizing!")
+            except Exception as e:
+                print("Summarization failed with error: ", e)
+                mark_improvement_failed(self.db, unimproved["uuid"])
+                return
         print("Done improving transcription with link: ", unimproved["link"])
 
     def get_word_groups(self, raw: str) -> List[str]:

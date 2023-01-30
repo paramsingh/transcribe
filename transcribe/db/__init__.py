@@ -13,12 +13,14 @@ def create_tables() -> None:
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS transcription (
-            id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid            TEXT NOT NULL,
-            link            TEXT NOT NULL,
-            result          TEXT,
-            created         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            improvement     TEXT
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            uuid                TEXT NOT NULL,
+            link                TEXT NOT NULL,
+            result              TEXT,
+            created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            improvement         TEXT,
+            summary             TEXT,
+            improvement_failed  BOOLEAN DEFAULT 0
         );
     """
     )
