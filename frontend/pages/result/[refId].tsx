@@ -13,7 +13,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { Transcription } from "../../components/Transcription";
-import YouTube from "react-youtube";
+import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 
 enum DataType {
   TRANSCRIPTION = "TRANSCRIPTION",
@@ -101,14 +101,7 @@ export default function TranscriptionResult() {
               )}
             </Alert>
           )}
-          {!waiting && link && (
-            <Box
-              as="iframe"
-              src={`https://youtube.com/embed/${link.split("=")[1]}`}
-              style={{ width: "80%", marginBottom: "20px" }}
-              sx={{ aspectRatio: "16 / 9" }}
-            />
-          )}
+          {!waiting && link && <YoutubeEmbed link={link} />}
           {!waiting && summary && (
             <Transcription text={summary} heading="Summary" />
           )}
