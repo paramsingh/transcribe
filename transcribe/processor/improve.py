@@ -58,11 +58,14 @@ class Improver:
         return word_groups
 
     def make_openai_request(self, prompt: str, max_tokens: int) -> str:
+        prompt_size = len(prompt.split())
+        if max_tokens + prompt_size > DAVINCI_MAX_TOKENS:
+            max_tokens = DAVINCI_MAX_TOKENS - prompt_size
         response = openai.Completion.create(
             engine="text-davinci-003",
             prompt=prompt,
             temperature=0.5,
-            max_tokens=min(DAVINCI_MAX_TOKENS, max_tokens),
+            max_tokens=max_tokens,
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0.6,
