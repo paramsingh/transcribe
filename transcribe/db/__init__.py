@@ -1,4 +1,5 @@
 import sqlite3
+from transcribe.login.db import create_user_table, create_session_table
 
 
 def init_db() -> sqlite3.Connection:
@@ -36,5 +37,7 @@ def create_tables() -> None:
         CREATE UNIQUE INDEX IF NOT EXISTS transcription_link_ndx ON transcription(link);
     """
     )
+    create_user_table(cursor)
+    create_session_table(cursor)
     connection.commit()
     connection.close()
