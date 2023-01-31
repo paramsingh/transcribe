@@ -2,7 +2,7 @@ import typing
 import os
 
 from flask_cors import cross_origin  # type: ignore
-from flask import Blueprint, jsonify, Response, request
+from flask import Blueprint, jsonify, Response, request, send_file
 from transcribe.db.db_utils import get_flask_db
 import transcribe.db.transcription as transcription_db
 from transcribe.processor.transcribe import get_downloaded_file_path
@@ -35,14 +35,14 @@ def get_transcription(uuid) -> Response:
 
 
 @api_bp.route("/internal/transcription/<uuid>/file", methods=["GET"])
-def send_file(uuid):
+def download_file_endpoint(uuid):
     if not uuid:
         return jsonify({"error": "no uuid"}), 400
     db = get_flask_db()
     result = transcription_db.get_transcription(db, uuid)
     if not result:
         return jsonify({"error": "not found"}), 404
-    filename = get_downloaded_file_path(uuid)
-    if not os.path.exists(filename):
-        return jsonify({"error": "not found"}), 404
-    return send_file(filename, mimetype="audio/ogg", as_attachment=True)
+    fn = get_downloaded_file_path(uuid)
+    if not os.path.exists(fn):
+        return jsonify({"error": f"hahahah not found {fn} {uuid}"}), 404
+    return send_file(fn, mimetype="audio/ogg")
