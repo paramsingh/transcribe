@@ -49,9 +49,14 @@ class WhisperProcessor:
         print("downloaded link for uuid: " + uuid)
         result = self.transcribe(uuid)
         populate_transcription(self.db, uuid, result)
+        self.delete_downloaded_file(self, uuid)
         print(
             f"Done! Link: https://transcribe.param.codes/api/v1/transcription/{uuid}/details"
         )
+
+    def delete_downloaded_file(self, uuid):
+        path = get_downloaded_file_path(uuid)
+        Path(path).unlink()
 
     def download_video(self, yt_link: str, uuid: str):
         """Use yt_dlp to download audio from a YT link to path"""
