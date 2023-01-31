@@ -11,6 +11,21 @@ from transcribe.db import init_db
 import schedule
 import time
 
+MAX_FILE_SIZE_TO_SEND_DIRECTLY = 80 * 1024 * 1024  # bytes
+API_BASE_URL = "https://transcribe.param.codes/api/v1"
+
+
+def get_downloaded_file_path(uuid: str) -> str:
+    return f"/tmp/{uuid}.opus"
+
+
+def get_file_size(file_path: str) -> int:
+    return Path(file_path).stat().st_size
+
+
+def get_api_endpoint(uuid: str) -> str:
+    return f"{API_BASE_URL}/internal/transcription/{uuid}/file"
+
 
 class WhisperProcessor:
     def __init__(self):
@@ -40,9 +55,10 @@ class WhisperProcessor:
 
     def download_video(self, yt_link: str, uuid: str):
         """Use yt_dlp to download audio from a YT link to path"""
+        path = get_downloaded_file_path(uuid)
         ydl_opts = {
             "format": "bestaudio/best",
-            "outtmpl": f"/tmp/{uuid}.opus",
+            "outtmpl": path,
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
@@ -56,7 +72,11 @@ class WhisperProcessor:
 
     def transcribe(self, uuid) -> str:
         print("transcribing for uuid " + uuid)
-        output = self.version.predict(audio=Path(f"/tmp/{uuid}.opus"))
+        path = get_downloaded_file_path(uuid)
+        if get_file_size(path) <= MAX_FILE_SIZE_TO_SEND_DIRECTLY:
+            output = self.version.predict(audio=Path(f"/tmp/{uuid}.opus"))
+        else:
+            output = self.version.predict(audio=get_api_endpoint(uuid))
         print("done with transcription for " + uuid)
         return json.dumps(output)
 
