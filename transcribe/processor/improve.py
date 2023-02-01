@@ -128,4 +128,7 @@ Summary:"""
 if __name__ == "__main__":
     openai.api_key = OPENAI_API_KEY
     improver = Improver()
-    improver.improve_one_transcription()
+    schedule.every(1).minutes.do(improver.improve_one_transcription)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
