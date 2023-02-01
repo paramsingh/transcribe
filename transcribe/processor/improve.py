@@ -12,6 +12,12 @@ import openai
 import json
 import schedule
 import time
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://6e57fad284954d52957fa64eb14c80cb@o536026.ingest.sentry.io/4504604755427328",
+    traces_sample_rate=1.0
+)
 
 WORD_GROUP_SIZE = 1000
 
@@ -41,6 +47,7 @@ class Improver:
                 add_improvement(self.db, improved_text, unimproved["uuid"])
                 print("Done improving!")
             except Exception as e:
+                sentry_sdk.capture_exception(e)
                 print("Improvement failed with error: ", e)
                 mark_improvement_failed(self.db, unimproved["uuid"])
                 return
@@ -54,6 +61,7 @@ class Improver:
                 add_summary(self.db, summary, unimproved["uuid"])
                 print("Done summarizing!")
             except Exception as e:
+                sentry_sdk.capture_exception(e)
                 print("Summarization failed with error: ", e)
                 mark_improvement_failed(self.db, unimproved["uuid"])
                 return

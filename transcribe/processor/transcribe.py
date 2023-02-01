@@ -12,6 +12,13 @@ from transcribe.db import init_db
 import schedule
 import time
 
+import sentry_sdk
+sentry_sdk.init(
+    dsn="https://6e57fad284954d52957fa64eb14c80cb@o536026.ingest.sentry.io/4504604755427328",
+    traces_sample_rate=1.0
+)
+
+
 MAX_FILE_SIZE_TO_SEND_DIRECTLY = 80 * 1024 * 1024  # bytes
 API_BASE_URL = "https://transcribe.param.codes/api/v1"
 
@@ -57,6 +64,7 @@ class WhisperProcessor:
             )
         except Exception as e:
             print("Transcription failed with error: ", e)
+            sentry_sdk.capture_exception(e)
             mark_transcription_failed(self.db, uuid)
             return
 
