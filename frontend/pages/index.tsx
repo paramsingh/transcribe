@@ -144,6 +144,13 @@ export default function Transcription() {
               </Popover>
             )}
           </Box>
+          <Box>
+            If this seems like something you'd find useful or you try it out,
+            please reach out to me on Twitter, as I'd love to talk:{" "}
+            <Link href="https://twitter.com/iliekcomputers">
+              @iliekcomputers
+            </Link>
+          </Box>
         </div>
       </main>
     </>
