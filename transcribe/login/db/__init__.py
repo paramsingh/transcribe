@@ -3,7 +3,7 @@ def create_user_table(cursor):
         """
         CREATE TABLE IF NOT EXISTS user (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id         TEXT NOT NULL,
+            token           TEXT NOT NULL,
             email           TEXT NOT NULL,
             created         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -11,7 +11,7 @@ def create_user_table(cursor):
     )
 
     cursor.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS user_uuid_ndx ON user(uuid);")
+        "CREATE UNIQUE INDEX IF NOT EXISTS user_token_ndx ON user(token);")
 
     cursor.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS user_email_ndx ON user(email);")
@@ -22,7 +22,7 @@ def create_session_table(cursor):
         """
         CREATE TABLE IF NOT EXISTS session (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id      TEXT NOT NULL,
+            token           TEXT NOT NULL,
             user_id         TEXT NOT NULL,
             created         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             FOREIGN KEY (user_id) REFERENCES user(id)
@@ -31,10 +31,10 @@ def create_session_table(cursor):
     )
 
     cursor.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS session_uuid_ndx ON session(uuid);")
+        "CREATE UNIQUE INDEX IF NOT EXISTS session_token_ndx ON session(token);")
 
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS session_user_uuid_ndx ON session(user_uuid);")
+        "CREATE INDEX IF NOT EXISTS session_user_id_ndx ON session(user_id);")
 
 
 def create_magic_link_table(cursor):

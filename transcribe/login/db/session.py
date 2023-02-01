@@ -8,7 +8,7 @@ def get_session(db: sqlite3.Connection, id: int) -> Optional[dict]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT id, user_id, session_id, created FROM session WHERE id = ?;
+        SELECT id, user_id, token, created FROM session WHERE id = ?;
     """,
         (id,),
     )
@@ -25,14 +25,14 @@ def get_session(db: sqlite3.Connection, id: int) -> Optional[dict]:
 
 def create_session(db, user):
     """ Create a new session in the database """
-    session_id = f"session_{str(uuid.uuid4())}"
+    token = f"session_{str(uuid.uuid4())}"
     cursor = db.cursor()
     cursor.execute(
         """
-        INSERT INTO session (user_id, session_id)
+        INSERT INTO session (user_id, token)
         VALUES (?, ?);
     """,
-        (user["id"], session_id),
+        (user["id"], token),
     )
     db.commit()
     return get_session(db, cursor.lastrowid)

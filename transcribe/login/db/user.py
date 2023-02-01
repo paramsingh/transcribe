@@ -8,7 +8,7 @@ def get_user_by_id(db: sqlite3.Connection, id: int) -> Optional[dict]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT id, email, user_id, created FROM user WHERE id = ?;
+        SELECT id, email, token, created FROM user WHERE id = ?;
     """,
         (id,),
     )
@@ -17,7 +17,7 @@ def get_user_by_id(db: sqlite3.Connection, id: int) -> Optional[dict]:
         return {
             "id": user[0],
             "email": user[1],
-            "user_id": user[2],
+            "token": user[2],
             "created": user[3],
         }
     return None
@@ -36,7 +36,7 @@ def get_user_by_email(db: sqlite3.Connection, email: str) -> Optional[dict]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT id, email, user_id, created FROM user WHERE email = ?;
+        SELECT id, email, token, created FROM user WHERE email = ?;
     """,
         (email,),
     )
@@ -45,7 +45,7 @@ def get_user_by_email(db: sqlite3.Connection, email: str) -> Optional[dict]:
         return {
             "id": user[0],
             "email": user[1],
-            "user_id": user[2],
+            "token": user[2],
             "created": user[3],
         }
     return None
@@ -56,7 +56,7 @@ def create_user(db: sqlite3.Connection, email: str) -> dict:
     cursor = db.cursor()
     cursor.execute(
         """
-        INSERT INTO user (email, user_id)
+        INSERT INTO user (email, token)
         VALUES (?, ?);
     """,
         (email, f"usr_{str(uuid.uuid4())}"),
