@@ -1,6 +1,6 @@
 """A script to improve the transcriptions using GPT-3."""
 from typing import List
-from transcribe.config import OPENAI_API_KEY
+from transcribe.config import OPENAI_API_KEY, DEVELOPMENT_MODE
 from transcribe.db import init_db
 from transcribe.db.transcription import (
     get_one_unimproved_transcription,
@@ -13,11 +13,13 @@ import json
 import schedule
 import time
 import sentry_sdk
+from transcribe.processor import sentry_report
 
-sentry_sdk.init(
-    dsn="https://6e57fad284954d52957fa64eb14c80cb@o536026.ingest.sentry.io/4504604755427328",
-    traces_sample_rate=1.0
-)
+if not DEVELOPMENT_MODE:
+    sentry_sdk.init(
+        dsn="https://6e57fad284954d52957fa64eb14c80cb@o536026.ingest.sentry.io/4504604755427328",
+        traces_sample_rate=1.0
+    )
 
 WORD_GROUP_SIZE = 1000
 
@@ -47,7 +49,7 @@ class Improver:
                 add_improvement(self.db, improved_text, unimproved["uuid"])
                 print("Done improving!")
             except Exception as e:
-                sentry_sdk.capture_exception(e)
+                sentry_report(e)
                 print("Improvement failed with error: ", e)
                 mark_improvement_failed(self.db, unimproved["uuid"])
                 return
@@ -61,7 +63,7 @@ class Improver:
                 add_summary(self.db, summary, unimproved["uuid"])
                 print("Done summarizing!")
             except Exception as e:
-                sentry_sdk.capture_exception(e)
+                sentry_report(e)
                 print("Summarization failed with error: ", e)
                 mark_improvement_failed(self.db, unimproved["uuid"])
                 return
