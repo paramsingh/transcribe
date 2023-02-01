@@ -25,11 +25,13 @@ import { getDetailsForUUID, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
 import { useRouter } from "next/router";
 import scriber from "../public/scriber.png";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Transcription() {
   const [link, setLink] = useState<string>("");
+  const [transcriptionID, setTranscriptionID] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
   const [waiting, setWaiting] = useState<boolean>(true);
@@ -66,6 +68,7 @@ export default function Transcription() {
     submitLink(link).then((data) => {
       console.debug("submitted successfully!", data);
       console.debug(data.id);
+      setTranscriptionID(data.id);
       const id = setInterval(() => {
         listenForResults(data.id);
       }, 5 * 1000);
@@ -106,7 +109,7 @@ export default function Transcription() {
               placeholder={"Enter a YouTube link for us to transcribe."}
             />
           </Box>
-          <Box paddingBottom={100}>
+          <Box paddingBottom={200}>
             <Button
               colorScheme={"blue"}
               onClick={(e) => submit()}
@@ -131,7 +134,10 @@ export default function Transcription() {
                     <PopoverHeader>Note</PopoverHeader>
                     <PopoverBody>
                       We will redirect you to the transcription when it is
-                      ready, it may take some time.
+                      ready, it may take some time. If you do not want to wait,
+                      come back to{" "}
+                      <Link href={`/result/${transcriptionID}`}>this link</Link>{" "}
+                      later and we should have it ready.
                     </PopoverBody>
                   </PopoverContent>
                 </Portal>
