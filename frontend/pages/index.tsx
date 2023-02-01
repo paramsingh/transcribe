@@ -145,8 +145,8 @@ export default function Transcription() {
             )}
           </Box>
           <Box>
-            If this seems like something you'd find useful or you try it out,
-            please reach out to me on Twitter, as I'd love to talk:{" "}
+            If this seems like something you&lsquo;d find useful or you try it
+            out, please reach out to me on Twitter, as I&lsquo;d love to talk:{" "}
             <Link href="https://twitter.com/iliekcomputers">
               @iliekcomputers
             </Link>
