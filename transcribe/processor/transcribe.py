@@ -6,6 +6,7 @@ import json
 from transcribe.db.transcription import (
     get_one_unfinished_transcription,
     populate_transcription,
+    mark_transcription_failed
 )
 from transcribe.db import init_db
 import schedule
@@ -47,12 +48,17 @@ class WhisperProcessor:
         print("Processing link for uuid: " + uuid + " with link: " + yt_link)
         self.download_video(yt_link, uuid)
         print("downloaded link for uuid: " + uuid)
-        result = self.transcribe(uuid)
-        populate_transcription(self.db, uuid, result)
-        self.delete_downloaded_file(self, uuid)
-        print(
-            f"Done! Link: https://transcribe.param.codes/api/v1/transcription/{uuid}/details"
-        )
+        try:
+            result = self.transcribe(uuid)
+            populate_transcription(self.db, uuid, result)
+            self.delete_downloaded_file(self, uuid)
+            print(
+                f"Done! Link: https://transcribe.param.codes/api/v1/transcription/{uuid}/details"
+            )
+        except Exception as e:
+            print("Transcription failed with error: ", e)
+            mark_transcription_failed(self.db, uuid)
+            return
 
     def delete_downloaded_file(self, uuid):
         path = get_downloaded_file_path(uuid)

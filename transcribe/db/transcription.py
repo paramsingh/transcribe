@@ -49,7 +49,11 @@ def get_one_unfinished_transcription(db) -> Union[dict, None]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT uuid, link FROM transcription WHERE result is NULL LIMIT 1;
+        SELECT uuid, link
+          FROM transcription
+         WHERE result is NULL
+           AND transcribe_failed = 0
+         LIMIT 1;
     """
     )
     result = cursor.fetchone()
@@ -103,6 +107,17 @@ def mark_improvement_failed(db, uuid: str) -> None:
     cursor.execute(
         """
         UPDATE transcription SET improvement_failed = 1 WHERE uuid = ?;
+    """,
+        (uuid,),
+    )
+    db.commit()
+
+
+def mark_transcription_failed(db, uuid: str) -> None:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        UPDATE transcription SET transcribe_failed = 1 WHERE uuid = ?;
     """,
         (uuid,),
     )

@@ -20,7 +20,8 @@ def create_tables() -> None:
             created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             improvement         TEXT,
             summary             TEXT,
-            improvement_failed  BOOLEAN DEFAULT 0
+            improvement_failed  BOOLEAN DEFAULT 0,
+            transcribe_failed   BOOLEAN DEFAULT 0
         );
     """
     )
