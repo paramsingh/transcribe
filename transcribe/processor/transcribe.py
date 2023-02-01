@@ -21,7 +21,7 @@ if not DEVELOPMENT_MODE:
     )
 
 
-MAX_FILE_SIZE_TO_SEND_DIRECTLY = 80 * 1024 * 1024  # bytes
+MAX_FILE_SIZE_TO_SEND_DIRECTLY = 30 * 1024 * 1024  # bytes
 API_BASE_URL = "https://transcribe.param.codes/api/v1"
 
 
