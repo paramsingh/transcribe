@@ -51,9 +51,9 @@ class WhisperProcessor:
         try:
             result = self.transcribe(uuid)
             populate_transcription(self.db, uuid, result)
-            self.delete_downloaded_file(self, uuid)
+            self.delete_downloaded_file(uuid)
             print(
-                f"Done! Link: https://transcribe.param.codes/api/v1/transcription/{uuid}/details"
+                f"Done! Link: https://transcribe.param.codes/result/{uuid}"
             )
         except Exception as e:
             print("Transcription failed with error: ", e)
