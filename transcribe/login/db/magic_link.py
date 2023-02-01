@@ -1,6 +1,6 @@
 import sqlite3
 import uuid
-import time
+import datetime
 
 LINK_VALIDITY_TIME = 1 * 60 * 60  # 1 hour
 
@@ -45,18 +45,19 @@ def get_valid_link(db: sqlite3.Connection, token: str) -> bool:
     }
 
 
-def redeem_magic_link(db: sqlite3.Connection, link_token: str):
+def redeem_magic_link(db: sqlite3.Connection, link_token: str, session_id: int):
     cursor = db.cursor()
     cursor.execute(
         """
         UPDATE magic_link
            SET redeemed = 1,
-               redeemed_at = ?
+               redeemed_at = ?,
+               session_id = ?
          WHERE link_token = ?
-        """, (link_token, time.time()),
+        """, (datetime.datetime.now(), session_id, link_token),
     )
     db.commit()
 
 
-def expired(created) -> bool:
-    return created < time.time() - LINK_VALIDITY_TIME
+def expired(created: datetime.datetime) -> bool:
+    return created >= datetime.datetime.now() - datetime.timedelta(seconds=LINK_VALIDITY_TIME)

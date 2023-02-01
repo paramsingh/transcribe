@@ -3,6 +3,7 @@ import sentry_sdk
 import transcribe.db as db
 from flask import Flask, g
 from transcribe.api import api_bp
+from transcribe.login.flask import login_bp
 from transcribe.db.db_utils import get_flask_db
 import transcribe.config as config
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -18,6 +19,7 @@ if not config.DEVELOPMENT_MODE:
 
 app = Flask(__name__)
 app.register_blueprint(api_bp, url_prefix="/api/v1")
+app.register_blueprint(login_bp, url_prefix="/login")
 
 with app.app_context():
     get_flask_db()

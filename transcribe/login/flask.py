@@ -37,6 +37,6 @@ def send_email():
     if not user:
         return jsonify({"error": "invalid secret"}), 400
 
-    session = db_session.create_session(user)
-    db_magic_link.redeem_magic_link(db, magic_link)
+    session = db_session.create_session(db, user)
+    db_magic_link.redeem_magic_link(db, magic_link, session['id'])
     return jsonify({"session": session['session_id']})
