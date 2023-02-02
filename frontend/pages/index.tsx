@@ -30,6 +30,7 @@ import Link from "next/link";
 import { LogoAndTitle } from "../components/LogoAndTitle";
 import { TranscriberHead } from "../components/TranscriberHead";
 import { getUser } from "../utils/getUser";
+import { getSessionToken } from "../utils/sessionTokenUtils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -58,7 +59,7 @@ export default function Transcription() {
   };
 
   useEffect(() => {
-    const sessionToken = localStorage.getItem("sessionToken");
+    const sessionToken = getSessionToken();
     if (!sessionToken) {
       return;
     }

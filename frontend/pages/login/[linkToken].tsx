@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { redeemToken } from "../../client/login";
 import { TranscriberHead } from "../../components/TranscriberHead";
+import { setSessionToken } from "../../utils/sessionTokenUtils";
 
 export default function RedeemToken() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function RedeemToken() {
             alert("login failed");
           }
           // put session token in local storage
-          localStorage.setItem("sessionToken", sessionToken);
+          setSessionToken(sessionToken);
           router.push("/");
         })
         .catch((err) => {

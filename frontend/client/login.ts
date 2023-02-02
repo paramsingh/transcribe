@@ -1,3 +1,5 @@
+import { removeSessionToken } from "../utils/sessionTokenUtils";
+
 const BASE_URL = "http://localhost:6550/api/login";
 
 export const sendEmail = async (email: string) => {
@@ -32,7 +34,7 @@ export const getUserFromSessionToken = async (sessionToken: string) => {
   if (response.status == 200) {
     return response.json();
   }
-  localStorage.removeItem("sessionToken");
+  removeSessionToken();
   throw new Error("Session token invalid");
 };
 

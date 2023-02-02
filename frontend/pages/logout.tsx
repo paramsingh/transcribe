@@ -2,18 +2,22 @@ import { useEffect, useState } from "react";
 import { Text } from "@chakra-ui/react";
 import { TranscriberHead } from "../components/TranscriberHead";
 import { logOut } from "../client/login";
+import {
+  getSessionToken,
+  removeSessionToken,
+} from "../utils/sessionTokenUtils";
 
 export default function Logout() {
   const [loggedOut, setLoggedOut] = useState<boolean>(false);
   useEffect(() => {
     if (!loggedOut) {
-      const sessionToken = localStorage.getItem("sessionToken");
+      const sessionToken = getSessionToken();
       if (!sessionToken) {
         alert("not logged in");
       }
       logOut(sessionToken as string)
         .then((data) => {
-          localStorage.removeItem("sessionToken");
+          removeSessionToken();
           setLoggedOut(true);
         })
         .catch((err) => {
