@@ -18,6 +18,11 @@ if not config.DEVELOPMENT_MODE:
     )
 
 app = Flask(__name__)
+app.config['MAIL_SERVER'] = 'mail.messagingengine.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = config.FASTMAIL_USERNAME
+app.config['MAIL_PASSWORD'] = config.FASTMAIL_APP_PASSWORD
 app.register_blueprint(api_bp, url_prefix="/api/v1")
 app.register_blueprint(login_bp, url_prefix="/api/login")
 

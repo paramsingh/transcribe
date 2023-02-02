@@ -13,7 +13,6 @@ const Login = () => {
   const [currentView, setCurrentView] = useState<CurrentView>(
     CurrentView.LOGIN_FORM
   );
-  const [token, setToken] = useState<string>("");
   const onClick = (email: string) => {
     console.log("hello");
     sendEmail(email)
@@ -21,8 +20,6 @@ const Login = () => {
         if (data["success"]) {
           setCurrentView(CurrentView.EMAIL_SENT);
         }
-        setToken(data["token"]);
-        console.log(JSON.stringify(data));
       })
       .catch((err) => {
         console.log(err);
@@ -43,7 +40,7 @@ const Login = () => {
           {currentView == CurrentView.EMAIL_SENT && (
             <Text size="md" paddingBottom={10}>
               We have sent you an email with a magic link to sign in. Please
-              check your inbox. Link: http://localhost:3000/login/{token}
+              check your inbox.
             </Text>
           )}
         </div>

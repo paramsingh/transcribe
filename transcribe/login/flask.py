@@ -1,27 +1,24 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_cors import cross_origin  # type: ignore
 from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.user as db_user
 import transcribe.login.db.session as db_session
 import transcribe.login.db.magic_link as db_magic_link
 import transcribe.config as config
-from sendgrid.helpers.mail import Mail
-from sendgrid import SendGridAPIClient
+from flask_mail import Mail, Message
 
 login_bp = Blueprint("login", __name__)
 
 
 def send_email(email: str, link_token: str):
-    message = Mail(
-        from_email="me@param.codes",
-        to_emails=email,
+    message = Message(
+        sender=("Param Singh", current_app.config.get("MAIL_USERNAME")),
+        recipients=[email],
         subject=f"Login to Transcribe - {link_token}",
-        html_content=f"Click <a href='http://localhost:3000/login/{link_token}'>here</a> to login to Transcribe",
+        body=f"Hi {email}! Click https://transcribe.param.codes/login/{link_token} to sign in to Transcribe. This link will expire in an hour.",
     )
-    client = SendGridAPIClient(config.SENDGRID_API_KEY)
-    r = client.send(message)
-    print(r.status_code)
-    print(r.body)
+    mail = Mail(current_app)
+    mail.send(message)
 
 
 @login_bp.route("/send-email", methods=["POST"])
@@ -37,7 +34,7 @@ def send_email_endpoint():
     magic_link = db_magic_link.create_magic_link(db, user['id'])
 
     send_email(email, magic_link)
-    return jsonify({"success": True, "token": magic_link})
+    return jsonify({"success": True})
 
 
 @login_bp.route("/redeem-magic-link", methods=["POST"])
