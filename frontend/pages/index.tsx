@@ -18,6 +18,7 @@ import {
   PopoverCloseButton,
   PopoverHeader,
   Portal,
+  Text,
 } from "@chakra-ui/react";
 import InfoIcon from "@chakra-ui/icon";
 import styles from "../styles/Home.module.css";
@@ -28,6 +29,7 @@ import scriber from "../public/scriber.png";
 import Link from "next/link";
 import { LogoAndTitle } from "../components/LogoAndTitle";
 import { TranscriberHead } from "../components/TranscriberHead";
+import { getUser } from "../utils/getUser";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +39,7 @@ export default function Transcription() {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
   const [waiting, setWaiting] = useState<boolean>(true);
+  const [user, setUser] = useState<any>(null);
   const { push } = useRouter();
 
   const listenForResults = (id: string) => {
@@ -53,6 +56,20 @@ export default function Transcription() {
       }
     });
   };
+
+  useEffect(() => {
+    const sessionToken = localStorage.getItem("sessionToken");
+    if (!sessionToken) {
+      return;
+    }
+    getUser(sessionToken)
+      .then((user) => {
+        setUser(user);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
 
   useEffect(() => {
     if (!waiting) {
@@ -84,6 +101,12 @@ export default function Transcription() {
       <main>
         <div>
           <LogoAndTitle />
+          {user && (
+            <Text fontSize="xl" paddingBottom={10}>
+              {console.log(user)}
+              Current user: {user.email}
+            </Text>
+          )}
           <Heading as={"h2"} size="md" paddingBottom={10}>
             Transcribe your favorite YouTube videos using the magic of AI.
           </Heading>

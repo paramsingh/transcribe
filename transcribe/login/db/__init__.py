@@ -21,10 +21,12 @@ def create_session_table(cursor):
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS session (
-            id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            token           TEXT NOT NULL,
-            user_id         TEXT NOT NULL,
-            created         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+            token                   TEXT NOT NULL,
+            user_id                 TEXT NOT NULL,
+            created                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            logged_out              BOOLEAN DEFAULT 0,
+            logged_out_at           TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES user(id)
         );
         """

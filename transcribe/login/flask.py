@@ -43,3 +43,27 @@ def redeem_magic_link_endpoint():
     session = db_session.create_session(db, user)
     db_magic_link.redeem_magic_link(db, magic_link, session['id'])
     return jsonify({"session": session['session_id']})
+
+
+@login_bp.route("/get-user", methods=["GET"])
+@cross_origin()
+def get_user_endpoint():
+    authorization_header = request.headers.get("Authorization")
+    session_token = authorization_header.split()[1]
+    db = get_flask_db()
+    user_id = db_session.validate_and_get_user_id(db, session_token)
+    if user_id is not None:
+        user = db_user.get_user_by_id(db, user_id)
+        return jsonify(user)
+    else:
+        return jsonify({"error": "invalid session"}), 400
+
+
+@login_bp.route('/logout', methods=['POST'])
+@cross_origin()
+def logout_endpoint():
+    authorization_header = request.headers.get("Authorization")
+    session_token = authorization_header.split()[1]
+    db = get_flask_db()
+    db_session.log_out_session(db, session_token)
+    return jsonify({"success": True})
