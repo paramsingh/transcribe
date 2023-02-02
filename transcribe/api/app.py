@@ -19,7 +19,7 @@ if not config.DEVELOPMENT_MODE:
 
 app = Flask(__name__)
 app.register_blueprint(api_bp, url_prefix="/api/v1")
-app.register_blueprint(login_bp, url_prefix="/login")
+app.register_blueprint(login_bp, url_prefix="/api/login")
 
 with app.app_context():
     get_flask_db()

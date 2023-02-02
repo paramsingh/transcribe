@@ -24,7 +24,7 @@ export default function RedeemToken() {
           alert("login failed");
         });
     }
-  }, []);
+  });
 
   return (
     <>
