@@ -1,5 +1,6 @@
 const BASE_URL = "https://transcribe.param.codes/api/v1";
-const submitLink = async (link: string) => {
+
+export const submitLink = async (link: string) => {
   const response = await fetch(`${BASE_URL}/transcribe`, {
     method: "POST",
     headers: {
@@ -10,9 +11,7 @@ const submitLink = async (link: string) => {
   return response.json();
 };
 
-const getDetailsForUUID = async (uuid: string) => {
+export const getDetailsForUUID = async (uuid: string) => {
   const response = await fetch(`${BASE_URL}/transcription/${uuid}/details`);
   return response.json();
 };
-
-export { submitLink, getDetailsForUUID };
