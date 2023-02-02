@@ -59,7 +59,7 @@ def create_user(db: sqlite3.Connection, email: str) -> dict:
         INSERT INTO user (email, token)
         VALUES (?, ?);
     """,
-        (email, f"usr_{str(uuid.uuid4())}"),
+        (email, f"usr-{str(uuid.uuid4())}"),
     )
     db.commit()
     return get_user_by_email(db, email)

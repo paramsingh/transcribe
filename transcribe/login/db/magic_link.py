@@ -6,7 +6,7 @@ LINK_VALIDITY_TIME = 1 * 60 * 60  # 1 hour
 
 
 def create_magic_link(db: sqlite3.Connection, user_id: int) -> str:
-    token = f"ml_{str(uuid.uuid4())}"
+    token = f"ml-{str(uuid.uuid4())}"
     cursor = db.cursor()
     cursor.execute(
         """

@@ -25,7 +25,7 @@ def get_session(db: sqlite3.Connection, id: int) -> Optional[dict]:
 
 def create_session(db, user):
     """ Create a new session in the database """
-    token = f"session_{str(uuid.uuid4())}"
+    token = f"session-{str(uuid.uuid4())}"
     cursor = db.cursor()
     cursor.execute(
         """
