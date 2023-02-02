@@ -24,7 +24,9 @@ def create_tables() -> None:
             improvement         TEXT,
             summary             TEXT,
             improvement_failed  BOOLEAN DEFAULT 0,
-            transcribe_failed   BOOLEAN DEFAULT 0
+            transcribe_failed   BOOLEAN DEFAULT 0,
+            user_id             INTEGER,
+            FOREIGN KEY (user_id) REFERENCES user(id)
         );
     """
     )
