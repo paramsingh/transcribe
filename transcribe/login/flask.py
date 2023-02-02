@@ -4,8 +4,24 @@ from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.user as db_user
 import transcribe.login.db.session as db_session
 import transcribe.login.db.magic_link as db_magic_link
+import transcribe.config as config
+from sendgrid.helpers.mail import Mail
+from sendgrid import SendGridAPIClient
 
 login_bp = Blueprint("login", __name__)
+
+
+def send_email(email: str, link_token: str):
+    message = Mail(
+        from_email="me@param.codes",
+        to_emails=email,
+        subject=f"Login to Transcribe - {link_token}",
+        html_content=f"Click <a href='http://localhost:3000/login/{link_token}'>here</a> to login to Transcribe",
+    )
+    client = SendGridAPIClient(config.SENDGRID_API_KEY)
+    r = client.send(message)
+    print(r.status_code)
+    print(r.body)
 
 
 @login_bp.route("/send-email", methods=["POST"])
@@ -19,7 +35,8 @@ def send_email_endpoint():
 
     user = db_user.get_or_create_user(db, email)
     magic_link = db_magic_link.create_magic_link(db, user['id'])
-    # TODO: send email with link
+
+    send_email(email, magic_link)
     return jsonify({"success": True, "token": magic_link})
 
 
