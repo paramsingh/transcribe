@@ -25,7 +25,7 @@ def get_user(req) -> typing.Optional[dict]:
     if not session_token:
         return None
     db = get_flask_db()
-    return db_session.validate_and_get_user_id(db, session_token)
+    return db_session.validate_and_get_user(db, session_token)
 
 
 @api_bp.route("/transcribe", methods=["POST"])

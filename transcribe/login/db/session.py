@@ -60,7 +60,7 @@ def get_session_by_token(db, token):
     return None
 
 
-def validate_and_get_user_id(db: sqlite3.Connection, session_token: str) -> Optional[dict]:
+def validate_and_get_user(db: sqlite3.Connection, session_token: str) -> Optional[dict]:
     session = get_session_by_token(db, session_token)
     if not session:
         return None

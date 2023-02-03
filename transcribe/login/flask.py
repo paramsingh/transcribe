@@ -79,9 +79,8 @@ def get_user_endpoint():
     authorization_header = request.headers.get("Authorization")
     session_token = authorization_header.split()[1]
     db = get_flask_db()
-    user_id = db_session.validate_and_get_user_id(db, session_token)
-    if user_id is not None:
-        user = db_user.get_user_by_id(db, user_id)
+    user = db_session.validate_and_get_user(db, session_token)
+    if user is not None:
         return jsonify(user)
     else:
         return jsonify({"error": "invalid session"}), 400
