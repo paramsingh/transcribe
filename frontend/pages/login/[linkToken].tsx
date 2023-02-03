@@ -18,7 +18,9 @@ export default function RedeemToken() {
           }
           // put session token in local storage
           setSessionToken(sessionToken);
-          router.push("/");
+          setTimeout(() => {
+            router.push("/");
+          }, 1000);
         })
         .catch((err) => {
           alert("login failed");

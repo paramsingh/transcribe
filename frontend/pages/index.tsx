@@ -100,7 +100,8 @@ export default function Transcription() {
           <LogoAndTitle />
           {user ? (
             <Text fontSize="xl" paddingBottom={10}>
-              Welcome, {user.email}!
+              Welcome, {user.email}! You can{" "}
+              <Link href="/logout">sign out here.</Link>
             </Text>
           ) : (
             <Text fontSize="xl" paddingBottom={10}>
