@@ -9,7 +9,6 @@ export default function RedeemToken() {
   const token = router.query.linkToken as string;
 
   useEffect(() => {
-    console.log("hello");
     if (token) {
       redeemToken(token)
         .then((data) => {

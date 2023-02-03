@@ -14,7 +14,6 @@ const Login = () => {
     CurrentView.LOGIN_FORM
   );
   const onClick = (email: string) => {
-    console.log("hello");
     sendEmail(email)
       .then((data) => {
         if (data["success"]) {
