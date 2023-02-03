@@ -8,6 +8,12 @@ def main():
     connection = init_db()
     cursor = connection.cursor()
     login_create_tables.schema_change(cursor)
+    print("Adding user_id column to transcription table...")
+    cursor.execute(
+        """
+            ALTER TABLE transcription ADD COLUMN user_id INTEGER REFERENCES user(id);
+        """
+    )
     print("Done!")
 
 

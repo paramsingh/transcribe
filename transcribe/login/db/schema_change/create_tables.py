@@ -2,6 +2,11 @@ from transcribe.login.db import create_session_table, create_user_table, create_
 
 
 def schema_change(cursor):
+
+    print("Enabling foreign keys...")
+    cursor.execute("PRAGMA foreign_keys = ON;")
+    print("Done!")
+
     # Create user table
     print("Creating user table...")
     create_user_table(cursor)
