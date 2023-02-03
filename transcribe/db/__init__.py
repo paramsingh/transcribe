@@ -41,8 +41,25 @@ def create_tables() -> None:
         CREATE UNIQUE INDEX IF NOT EXISTS transcription_link_ndx ON transcription(link);
     """
     )
+
     create_user_table(cursor)
     create_session_table(cursor)
     create_magic_link_table(cursor)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_transcription_attempt (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id             INTEGER NOT NULL,
+            transcription_id    INTEGER NOT NULL,
+            created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES user(id),
+            FOREIGN KEY (transcription_id) REFERENCES transcription(id)
+        );
+    """)
+    cursor.execute("""
+        CREATE UNIQUE INDEX
+              IF NOT EXISTS user_transcription_attempt_ndx
+                         ON user_transcription_attempt(user_id, transcription_id);
+    """)
     connection.commit()
     connection.close()
