@@ -46,12 +46,8 @@ export default function Transcription() {
   const listenForResults = (id: string) => {
     console.debug("listening for results");
     if (!id) return;
-    console.debug("have uuid");
-    console.debug("sending request");
     getDetailsForUUID(id).then((data) => {
       if (data["result"]) {
-        console.debug("have data", data);
-        console.debug("listen ID", listenID);
         setWaiting(false);
         push(`/result/${id}`);
       }
@@ -102,10 +98,14 @@ export default function Transcription() {
       <main>
         <div>
           <LogoAndTitle />
-          {user && (
+          {user ? (
             <Text fontSize="xl" paddingBottom={10}>
-              {console.log(user)}
-              Current user: {user.email}
+              Welcome, {user.email}!
+            </Text>
+          ) : (
+            <Text fontSize="xl" paddingBottom={10}>
+              Welcome! <Link href="/login">Sign in</Link> to keep track of
+              things you've transcribed.
             </Text>
           )}
           <Heading as={"h2"} size="md" paddingBottom={10}>

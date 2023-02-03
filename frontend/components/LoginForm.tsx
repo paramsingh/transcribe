@@ -6,6 +6,13 @@ export const LoginForm = ({
   onClick: (email: string) => void;
 }) => {
   const [email, setEmail] = useState<string>("");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+
+  const onClickMethod = () => {
+    setSubmitted(true);
+    onClick(email);
+  };
+
   return (
     <>
       <Text size="md" paddingBottom={10}>
@@ -20,7 +27,12 @@ export const LoginForm = ({
         />
       </Box>
       <Box>
-        <Button colorScheme="blue" onClick={() => onClick(email)}>
+        <Button
+          colorScheme="blue"
+          onClick={onClickMethod}
+          isLoading={submitted}
+          loadingText={"Sending email"}
+        >
           Continue
         </Button>
       </Box>

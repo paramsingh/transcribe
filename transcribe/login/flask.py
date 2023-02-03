@@ -9,13 +9,27 @@ from flask_mail import Mail, Message
 
 login_bp = Blueprint("login", __name__)
 
+email_body = """
+Hi {email}!
+
+Click https://transcribe.param.codes/login/{link_token} to sign in to Transcribe.
+This link will expire in an hour.
+
+If you did not request this email, feel free to ignore it.
+
+If you have any questions, please reply to this email.
+
+Thanks,
+Param
+"""
+
 
 def send_email(email: str, link_token: str):
     message = Message(
         sender=("Param Singh", current_app.config.get("MAIL_USERNAME")),
         recipients=[email],
-        subject=f"Login to Transcribe - {link_token}",
-        body=f"Hi {email}! Click https://transcribe.param.codes/login/{link_token} to sign in to Transcribe. This link will expire in an hour.",
+        subject=f"Sign in to Transcribe - Token: {link_token}",
+        body=email_body.format(email=email, link_token=link_token),
     )
     mail = Mail(current_app)
     mail.send(message)
