@@ -25,16 +25,16 @@ MAX_FILE_SIZE_TO_SEND_DIRECTLY = 30 * 1024 * 1024  # bytes
 API_BASE_URL = "https://transcribe.param.codes/api/v1"
 
 
-def get_downloaded_file_path(uuid: str) -> str:
-    return f"/tmp/{uuid}.opus"
+def get_downloaded_file_path(token: str) -> str:
+    return f"/tmp/{token}.opus"
 
 
 def get_file_size(file_path: str) -> int:
     return Path(file_path).stat().st_size
 
 
-def get_api_endpoint(uuid: str) -> str:
-    return f"{API_BASE_URL}/internal/transcription/{uuid}/file"
+def get_api_endpoint(token: str) -> str:
+    return f"{API_BASE_URL}/internal/transcription/{token}/file"
 
 
 class WhisperProcessor:
@@ -53,30 +53,30 @@ class WhisperProcessor:
             return
 
         yt_link = unfinished["link"]
-        uuid = unfinished["uuid"]
-        print("Processing link for uuid: " + uuid + " with link: " + yt_link)
-        self.download_video(yt_link, uuid)
-        print("downloaded link for uuid: " + uuid)
+        token = unfinished["token"]
+        print("Processing link for token: " + token + " with link: " + yt_link)
+        self.download_video(yt_link, token)
+        print("downloaded link for token: " + token)
         try:
-            result = self.transcribe(uuid)
-            populate_transcription(self.db, uuid, result)
-            self.delete_downloaded_file(uuid)
+            result = self.transcribe(token)
+            populate_transcription(self.db, token, result)
+            self.delete_downloaded_file(token)
             print(
-                f"Done! Link: https://transcribe.param.codes/result/{uuid}"
+                f"Done! Link: https://transcribe.param.codes/result/{token}"
             )
         except Exception as e:
             print("Transcription failed with error: ", e)
             sentry_report(e)
-            mark_transcription_failed(self.db, uuid)
+            mark_transcription_failed(self.db, token)
             return
 
-    def delete_downloaded_file(self, uuid):
-        path = get_downloaded_file_path(uuid)
+    def delete_downloaded_file(self, token: str):
+        path = get_downloaded_file_path(token)
         Path(path).unlink()
 
-    def download_video(self, yt_link: str, uuid: str):
+    def download_video(self, yt_link: str, token: str):
         """Use yt_dlp to download audio from a YT link to path"""
-        path = get_downloaded_file_path(uuid)
+        path = get_downloaded_file_path(token)
         ydl_opts = {
             "format": "bestaudio/best",
             "outtmpl": path,
@@ -91,14 +91,14 @@ class WhisperProcessor:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([yt_link])
 
-    def transcribe(self, uuid) -> str:
-        print("transcribing for uuid " + uuid)
-        path = get_downloaded_file_path(uuid)
+    def transcribe(self, token: str) -> str:
+        print("transcribing for token " + token)
+        path = get_downloaded_file_path(token)
         if get_file_size(path) <= MAX_FILE_SIZE_TO_SEND_DIRECTLY:
-            output = self.version.predict(audio=Path(f"/tmp/{uuid}.opus"))
+            output = self.version.predict(audio=Path(f"/tmp/{token}.opus"))
         else:
-            output = self.version.predict(audio=get_api_endpoint(uuid))
-        print("done with transcription for " + uuid)
+            output = self.version.predict(audio=get_api_endpoint(token))
+        print("done with transcription for " + token)
         return json.dumps(output)
 
 

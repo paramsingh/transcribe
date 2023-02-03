@@ -1,4 +1,4 @@
-import { getDetailsForUUID } from "../../client/api-client";
+import { getDetailsForToken } from "../../client/api-client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
@@ -33,7 +33,7 @@ export default function TranscriptionResult() {
 
   useEffect(() => {
     if (waiting && refId) {
-      getDetailsForUUID(refId).then((data) => {
+      getDetailsForToken(refId).then((data) => {
         if (data["result"]) {
           setLink(data["link"]);
           setTranscriptionResult(JSON.parse(data["result"]));

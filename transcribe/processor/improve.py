@@ -46,12 +46,12 @@ class Improver:
             print("Improving...")
             try:
                 improved_text = self.improve_text(result["transcription"])
-                add_improvement(self.db, improved_text, unimproved["uuid"])
+                add_improvement(self.db, improved_text, unimproved["token"])
                 print("Done improving!")
             except Exception as e:
                 sentry_report(e)
                 print("Improvement failed with error: ", e)
-                mark_improvement_failed(self.db, unimproved["uuid"])
+                mark_improvement_failed(self.db, unimproved["token"])
                 return
         else:
             print("improvement already exists, skipping improvement step")
@@ -60,12 +60,12 @@ class Improver:
             print("Summarizing...")
             try:
                 summary = self.summarize_text(result["transcription"])
-                add_summary(self.db, summary, unimproved["uuid"])
+                add_summary(self.db, summary, unimproved["token"])
                 print("Done summarizing!")
             except Exception as e:
                 sentry_report(e)
                 print("Summarization failed with error: ", e)
-                mark_improvement_failed(self.db, unimproved["uuid"])
+                mark_improvement_failed(self.db, unimproved["token"])
                 return
         print("Done improving transcription with link: ", unimproved["link"])
 

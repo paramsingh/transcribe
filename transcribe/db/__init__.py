@@ -17,7 +17,7 @@ def create_tables() -> None:
         """
         CREATE TABLE IF NOT EXISTS transcription (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid                TEXT NOT NULL,
+            token               TEXT NOT NULL,
             link                TEXT NOT NULL,
             result              TEXT,
             created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +33,7 @@ def create_tables() -> None:
 
     cursor.execute(
         """
-        CREATE UNIQUE INDEX IF NOT EXISTS transcription_uuid_ndx ON transcription(uuid);
+        CREATE UNIQUE INDEX IF NOT EXISTS transcription_uuid_ndx ON transcription(token);
     """
     )
     cursor.execute(

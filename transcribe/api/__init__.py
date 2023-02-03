@@ -37,31 +37,31 @@ def transcribe() -> Response:
     if not link:
         return jsonify({"error": "no link"}), 400
     db = get_flask_db()
-    uuid = transcription_db.create_transcription(db, link, user_id, None)
-    return jsonify({"id": uuid})
+    token = transcription_db.create_transcription(db, link, user_id, None)
+    return jsonify({"id": token})
 
 
-@api_bp.route("/transcription/<uuid>/details", methods=["GET"])
+@api_bp.route("/transcription/<token>/details", methods=["GET"])
 @cross_origin()
-def get_transcription(uuid) -> Response:
-    if not uuid:
-        return jsonify({"error": "no uuid"}), 400
+def get_transcription(token) -> Response:
+    if not token:
+        return jsonify({"error": "no token"}), 400
     db = get_flask_db()
-    result = transcription_db.get_transcription(db, uuid)
+    result = transcription_db.get_transcription(db, token)
     if not result:
         return jsonify({"error": "not found"}), 404
     return jsonify(result)
 
 
-@api_bp.route("/internal/transcription/<uuid>/file", methods=["GET"])
-def download_file_endpoint(uuid):
-    if not uuid:
-        return jsonify({"error": "no uuid"}), 400
+@api_bp.route("/internal/transcription/<token>/file", methods=["GET"])
+def download_file_endpoint(token: str):
+    if not token:
+        return jsonify({"error": "no token"}), 400
     db = get_flask_db()
-    result = transcription_db.get_transcription(db, uuid)
+    result = transcription_db.get_transcription(db, token)
     if not result:
         return jsonify({"error": "not found"}), 404
-    fn = get_downloaded_file_path(uuid)
+    fn = get_downloaded_file_path(token)
     if not os.path.exists(fn):
-        return jsonify({"error": f"hahahah not found {fn} {uuid}"}), 404
+        return jsonify({"error": f"file not found: {token}"}), 404
     return send_file(fn, mimetype="audio/ogg")

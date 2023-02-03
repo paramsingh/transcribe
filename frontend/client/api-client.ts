@@ -18,7 +18,7 @@ export const submitLink = async (link: string) => {
   return response.json();
 };
 
-export const getDetailsForUUID = async (uuid: string) => {
-  const response = await fetch(`${BASE_URL}/transcription/${uuid}/details`);
+export const getDetailsForToken = async (token: string) => {
+  const response = await fetch(`${BASE_URL}/transcription/${token}/details`);
   return response.json();
 };

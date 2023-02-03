@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import InfoIcon from "@chakra-ui/icon";
 import styles from "../styles/Home.module.css";
-import { getDetailsForUUID, submitLink } from "../client/api-client";
+import { getDetailsForToken, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
 import { useRouter } from "next/router";
 import scriber from "../public/scriber.png";
@@ -46,7 +46,7 @@ export default function Transcription() {
   const listenForResults = (id: string) => {
     console.debug("listening for results");
     if (!id) return;
-    getDetailsForUUID(id).then((data) => {
+    getDetailsForToken(id).then((data) => {
       if (data["result"]) {
         setWaiting(false);
         push(`/result/${id}`);
