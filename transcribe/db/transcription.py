@@ -158,7 +158,7 @@ def create_transcription(db, link: str, user_id: int, result: str) -> str:
     uuid = str(uuid4())
     cursor.execute(
         """
-        INSERT INTO transcription (uuid, link, user_id, result) VALUES (?, ?, ?);
+        INSERT INTO transcription (uuid, link, user_id, result) VALUES (?, ?, ?, ?);
     """,
         (uuid, link, user_id, result),
     )
