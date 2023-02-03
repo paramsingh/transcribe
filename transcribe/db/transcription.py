@@ -148,7 +148,7 @@ def populate_transcription(db, uuid: str, result: str) -> None:
     db.commit()
 
 
-def create_transcription(db, link: str, result: str) -> str:
+def create_transcription(db, link: str, user_id: int, result: str) -> str:
     cursor = db.cursor()
 
     existing = get_transcription_by_link(db, link)
@@ -158,9 +158,9 @@ def create_transcription(db, link: str, result: str) -> str:
     uuid = str(uuid4())
     cursor.execute(
         """
-        INSERT INTO transcription (uuid, link, result) VALUES (?, ?, ?);
+        INSERT INTO transcription (uuid, link, user_id, result) VALUES (?, ?, ?);
     """,
-        (uuid, link, result),
+        (uuid, link, user_id, result),
     )
     db.commit()
     return uuid
