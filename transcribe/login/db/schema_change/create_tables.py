@@ -1,4 +1,4 @@
-from transcribe.login.db import create_session_table, create_user_table
+from transcribe.login.db import create_session_table, create_user_table, create_magic_link_table
 
 
 def schema_change(cursor):
@@ -10,4 +10,9 @@ def schema_change(cursor):
     # Create session table
     print("Creating session table...")
     create_session_table(cursor)
+    print("Done!")
+
+    # Create magic link table
+    print("Create magic link table...")
+    create_magic_link_table(cursor)
     print("Done!")
