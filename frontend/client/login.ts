@@ -1,6 +1,6 @@
 import { removeSessionToken } from "../utils/sessionTokenUtils";
 
-const BASE_URL = "http://localhost:6550/api/login";
+const BASE_URL = "https://transcribe.param.codes/api/login";
 
 export const sendEmail = async (email: string) => {
   const response = await fetch(`${BASE_URL}/send-email`, {
