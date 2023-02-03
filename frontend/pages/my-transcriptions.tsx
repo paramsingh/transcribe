@@ -1,0 +1,95 @@
+import { useState, useEffect } from "react";
+import { getSessionToken } from "../utils/sessionTokenUtils";
+import { getUser } from "../utils/getUser";
+import { getTranscriptionsForUser } from "../client/api-client";
+import { TranscriberHead } from "../components/TranscriberHead";
+import { LogoAndTitle } from "../components/LogoAndTitle";
+import {
+  Heading,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+export default function MyTranscriptions() {
+  const [user, setUser] = useState<any>(null);
+  const [transcriptions, setTranscriptions] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const sessionToken = getSessionToken();
+    if (!sessionToken) {
+      return;
+    }
+    getUser(sessionToken)
+      .then((user) => {
+        setUser(user);
+      })
+      .catch((err) => {
+        alert("You must be signed in to view this page");
+        router.push("/login");
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    getTranscriptionsForUser(user.token)
+      .then((data) => {
+        setTranscriptions(data.transcriptions);
+        console.log(data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [user]);
+
+  return (
+    <>
+      <TranscriberHead title={"Transcriber | Your transcriptions"} />
+      <main>
+        <LogoAndTitle />
+        <Heading as="h1" size="xl" paddingBottom={10}>
+          Your transcriptions
+        </Heading>
+        <TableContainer>
+          <Table variant="unstyled">
+            <Thead>
+              <Tr>
+                <Th style={{ width: "100%" }}>Video link</Th>
+                <Th>Transcription link</Th>
+                <Th>Status</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {transcriptions?.map((transcription: any) => {
+                return (
+                  <Tr key={transcription.token}>
+                    <Td>
+                      <Link href={transcription.link}>
+                        {transcription.link}
+                      </Link>
+                    </Td>
+                    <Td>
+                      <Link href={`/result/${transcription.token}`}>Link</Link>
+                    </Td>
+                    <Td>
+                      {transcription.summary
+                        ? "Transcription complete"
+                        : "In progress"}
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </main>
+    </>
+  );
+}

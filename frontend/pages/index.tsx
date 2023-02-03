@@ -99,10 +99,13 @@ export default function Transcription() {
         <div>
           <LogoAndTitle />
           {user ? (
-            <Text fontSize="xl" paddingBottom={10}>
-              Welcome, {user.email}! You can{" "}
-              <Link href="/logout">sign out here.</Link>
-            </Text>
+            <>
+              <Text fontSize="xl" paddingBottom={10}>
+                Welcome, {user.email}! You can{" "}
+                <Link href="/logout">sign out here.</Link> See your previous
+                transcriptions <Link href="/my-transcriptions">here.</Link>
+              </Text>
+            </>
           ) : (
             <Text fontSize="xl" paddingBottom={10}>
               Welcome! <Link href="/login">Sign in</Link> to keep track of

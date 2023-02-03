@@ -22,3 +22,19 @@ export const getDetailsForToken = async (token: string) => {
   const response = await fetch(`${BASE_URL}/transcription/${token}/details`);
   return response.json();
 };
+
+export const getTranscriptionsForUser = async (userToken: string) => {
+  const sessionToken = getSessionToken();
+  if (!sessionToken) {
+    throw new Error("No session token");
+  }
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${sessionToken}`,
+  };
+  const response = await fetch(`${BASE_URL}/user/${userToken}/transcriptions`, {
+    method: "GET",
+    headers,
+  });
+  return response.json();
+};
