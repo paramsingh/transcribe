@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { redeemToken } from "../../client/login";
+import { LogoAndTitle } from "../../components/LogoAndTitle";
 import { TranscriberHead } from "../../components/TranscriberHead";
 import { setSessionToken } from "../../utils/sessionTokenUtils";
 
@@ -32,6 +33,7 @@ export default function RedeemToken() {
     <>
       <TranscriberHead title={`Redeem token`} />
       <main>
+        <LogoAndTitle />
         <div>
           <h1>Signing you in...</h1>
         </div>

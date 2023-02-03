@@ -14,6 +14,7 @@ import {
 import { Transcription } from "../../components/Transcription";
 import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 import { TranscriberHead } from "../../components/TranscriberHead";
+import { LogoAndTitle } from "../../components/LogoAndTitle";
 
 enum DataType {
   TRANSCRIPTION = "TRANSCRIPTION",
@@ -54,6 +55,7 @@ export default function TranscriptionResult() {
     <>
       <TranscriberHead title={`Transcribe ${link && `| ${link}`}`} />
       <main>
+        <LogoAndTitle />
         <section>
           {/*<header><h2>{refId}</h2></header>*/}
           {waiting && <Spinner />}

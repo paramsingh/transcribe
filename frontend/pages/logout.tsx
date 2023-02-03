@@ -6,6 +6,7 @@ import {
   getSessionToken,
   removeSessionToken,
 } from "../utils/sessionTokenUtils";
+import { LogoAndTitle } from "../components/LogoAndTitle";
 
 export default function Logout() {
   const [loggedOut, setLoggedOut] = useState<boolean>(false);
@@ -29,6 +30,7 @@ export default function Logout() {
     <>
       <TranscriberHead title={`Transcriber | Logout`} />
       <main>
+        <LogoAndTitle />
         {loggedOut ? (
           <Text size="md" paddingBottom={10}>
             You have been logged out.
