@@ -24,7 +24,7 @@ export default function Logout() {
           console.error(err);
         });
     }
-  }, []);
+  }, [loggedOut]);
   return (
     <>
       <TranscriberHead title={`Transcriber | Logout`} />
