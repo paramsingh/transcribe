@@ -1,6 +1,6 @@
 from uuid import uuid4
 from transcribe.db import init_db
-from typing import Union
+from typing import Union, Optional
 import sqlite3
 
 
@@ -170,7 +170,9 @@ def create_transcription(db, link: str, user_id: int, result: str) -> str:
     return token
 
 
-def log_transcription_attempt(db: sqlite3.Connection, transcription_id: int, user_id: int) -> None:
+def log_transcription_attempt(db: sqlite3.Connection, transcription_id: int, user_id: Optional[int]) -> None:
+    if not user_id:
+        return
     if not transcription_attempt_exists(db, transcription_id, user_id):
         add_transcription_attempt(db, transcription_id, user_id)
 
@@ -179,7 +181,8 @@ def add_transcription_attempt(db: sqlite3.Connection, transcription_id: int, use
     cursor = db.cursor()
     cursor.execute(
         """
-        INSERT INTO user_transcription_attempt (transcription_id, user_id) VALUES (?, ?);
+        INSERT INTO user_transcription_attempt (transcription_id, user_id)
+             VALUES (?, ?);
     """,
         (transcription_id, user_id),
     )
@@ -190,7 +193,10 @@ def transcription_attempt_exists(db: sqlite3.Connection, transcription_id: int, 
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT id FROM user_transcription_attempt WHERE transcription_id = ? AND user_id = ?;
+        SELECT id
+          FROM user_transcription_attempt
+         WHERE transcription_id = ?
+           AND user_id = ?;
     """,
         (transcription_id, user_id),
     )
