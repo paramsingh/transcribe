@@ -54,10 +54,10 @@ def redeem_magic_link(db: sqlite3.Connection, link_token: str, session_id: int):
                redeemed_at = ?,
                session_id = ?
          WHERE link_token = ?
-        """, (datetime.datetime.now(), session_id, link_token),
+        """, (datetime.datetime.utcnow(), session_id, link_token),
     )
     db.commit()
 
 
 def expired(created: datetime.datetime) -> bool:
-    return created >= datetime.datetime.now() - datetime.timedelta(seconds=LINK_VALIDITY_TIME)
+    return created < datetime.datetime.utcnow() - datetime.timedelta(seconds=LINK_VALIDITY_TIME)
