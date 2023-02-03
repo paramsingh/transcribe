@@ -201,3 +201,24 @@ def transcription_attempt_exists(db: sqlite3.Connection, transcription_id: int, 
         (transcription_id, user_id),
     )
     return cursor.fetchone() is not None
+
+
+def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        SELECT t.token, t.link, t.result, t.improvement, t.summary
+          FROM user_transcription_attempt ut
+          JOIN transcription t
+            ON t.id = ut.transcription_id
+        WHERE ut.user_id = ?;
+        """,
+        (user_id,),
+    )
+    return [{
+        "token": row[0],
+        "link": row[1],
+        "result": row[2],
+        "improvement": row[3],
+        "summary": row[4],
+    } for row in cursor.fetchall()]

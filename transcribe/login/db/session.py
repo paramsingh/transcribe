@@ -1,6 +1,7 @@
 import uuid
 import sqlite3
 from typing import Optional
+from transcribe.login.db.user import get_user_by_id
 
 
 def get_session(db: sqlite3.Connection, id: int) -> Optional[dict]:
@@ -59,13 +60,13 @@ def get_session_by_token(db, token):
     return None
 
 
-def validate_and_get_user_id(db: sqlite3.Connection, session_token: str) -> Optional[int]:
+def validate_and_get_user_id(db: sqlite3.Connection, session_token: str) -> Optional[dict]:
     session = get_session_by_token(db, session_token)
     if not session:
         return None
     if session["logged_out"]:
         return None
-    return session["user_id"]
+    return get_user_by_id(db, session["user_id"])
 
 
 def log_out_session(db: sqlite3.Connection, session_token: str):

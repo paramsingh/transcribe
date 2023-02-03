@@ -20,7 +20,7 @@ def get_session_token(req) -> typing.Optional[str]:
     return authorization_header.split()[1]
 
 
-def get_user_id(req) -> typing.Optional[int]:
+def get_user(req) -> typing.Optional[dict]:
     session_token = get_session_token(req)
     if not session_token:
         return None
@@ -31,7 +31,8 @@ def get_user_id(req) -> typing.Optional[int]:
 @api_bp.route("/transcribe", methods=["POST"])
 @cross_origin()
 def transcribe() -> Response:
-    user_id = get_user_id(request)
+    user = get_user(request)
+    user_id = user['id'] if user else None
     request_data = typing.cast(typing.Dict[str, str], request.get_json())
     link = request_data.get("link")
     if not link:
@@ -51,6 +52,21 @@ def get_transcription(token) -> Response:
     if not result:
         return jsonify({"error": "not found"}), 404
     return jsonify(result)
+
+
+@api_bp.route("/user/<token>/transcriptions", methods=["GET"])
+@cross_origin()
+def get_user_transcriptions(token) -> Response:
+    if not token:
+        return jsonify({"error": "no token"}), 400
+    db = get_flask_db()
+    user = get_user(request)
+    if user is None:
+        return jsonify({"error": "unauthorized"}), 401
+    if user['token'] != token:
+        return jsonify({"error": "unauthorized"}), 401
+    result = transcription_db.get_user_transcription_attempts(db, user['id'])
+    return jsonify({"transcriptions": result})
 
 
 @api_bp.route("/internal/transcription/<token>/file", methods=["GET"])
