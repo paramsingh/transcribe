@@ -106,7 +106,7 @@ export default function Transcription() {
           ) : (
             <Text fontSize="xl" paddingBottom={10}>
               Welcome! <Link href="/login">Sign in</Link> to keep track of
-              things you've transcribed.
+              things you&apos;ve transcribed.
             </Text>
           )}
           <Heading as={"h2"} size="md" paddingBottom={10}>
