@@ -1,5 +1,6 @@
 import { getSessionToken } from "../utils/sessionTokenUtils";
 
+// const BASE_URL = "http://localhost:6550/api/v1";
 const BASE_URL = "https://transcribe.param.codes/api/v1";
 
 export const submitLink = async (link: string) => {

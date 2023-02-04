@@ -6,6 +6,7 @@ import { TranscriberHead } from "../components/TranscriberHead";
 import { LogoAndTitle } from "../components/LogoAndTitle";
 import {
   Heading,
+  Spinner,
   Table,
   TableContainer,
   Tbody,
@@ -20,6 +21,7 @@ import { useRouter } from "next/router";
 export default function MyTranscriptions() {
   const [user, setUser] = useState<any>(null);
   const [transcriptions, setTranscriptions] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function MyTranscriptions() {
     getTranscriptionsForUser(user.token)
       .then((data) => {
         setTranscriptions(data.transcriptions);
-        console.log(data);
+        setLoading(false);
       })
       .catch((err) => {
         console.error(err);
@@ -57,38 +59,47 @@ export default function MyTranscriptions() {
         <Heading as="h1" size="xl" paddingBottom={10}>
           Your transcriptions
         </Heading>
-        <TableContainer>
-          <Table variant="unstyled">
-            <Thead>
-              <Tr>
-                <Th style={{ width: "100%" }}>Video link</Th>
-                <Th>Transcription link</Th>
-                <Th>Status</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {transcriptions?.map((transcription: any) => {
-                return (
-                  <Tr key={transcription.token}>
-                    <Td>
-                      <Link href={transcription.link}>
-                        {transcription.link}
-                      </Link>
-                    </Td>
-                    <Td>
-                      <Link href={`/result/${transcription.token}`}>Link</Link>
-                    </Td>
-                    <Td>
-                      {transcription.summary
-                        ? "Transcription complete"
-                        : "In progress"}
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </TableContainer>
+        {loading && <Spinner size="lg" marginLeft={"50%"} />}
+        {!loading && (
+          <TableContainer>
+            <Table variant="unstyled">
+              <Thead>
+                <Tr>
+                  <Th style={{ width: "100%" }}>Video link</Th>
+                  <Th>Transcription link</Th>
+                  <Th>Status</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {transcriptions.map(
+                  (transcription: {
+                    token: string;
+                    link: string;
+                    summary: string;
+                  }) => {
+                    return (
+                      <Tr key={transcription.token}>
+                        <Td>
+                          <Link href={transcription.link}>
+                            {transcription.link}
+                          </Link>
+                        </Td>
+                        <Td>
+                          <Link href={`/result/${transcription.token}`}>
+                            Link
+                          </Link>
+                        </Td>
+                        <Td>
+                          {transcription.summary ? "Complete" : "In progress"}
+                        </Td>
+                      </Tr>
+                    );
+                  }
+                )}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        )}
       </main>
     </>
   );

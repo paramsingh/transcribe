@@ -55,7 +55,14 @@ class WhisperProcessor:
         yt_link = unfinished["link"]
         token = unfinished["token"]
         print("Processing link for token: " + token + " with link: " + yt_link)
-        self.download_video(yt_link, token)
+        try:
+            self.download_video(yt_link, token)
+        except Exception as e:
+            print("Couldn't download video: ", e)
+            sentry_report(e)
+            mark_transcription_failed(self.db, token)
+            return
+
         print("downloaded link for token: " + token)
         try:
             result = self.transcribe(token)
