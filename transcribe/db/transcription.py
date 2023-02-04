@@ -211,7 +211,8 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
           FROM user_transcription_attempt ut
           JOIN transcription t
             ON t.id = ut.transcription_id
-        WHERE ut.user_id = ?;
+         WHERE ut.user_id = ?;
+      ORDER BY ut.created DESC;
         """,
         (user_id,),
     )
@@ -223,4 +224,5 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
         "summary": row[4],
         "transcribe_failed": row[5],
         "improvement_failed": row[6],
+        "created": str(row[7]),
     } for row in cursor.fetchall()]
