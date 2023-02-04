@@ -211,7 +211,7 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
           FROM user_transcription_attempt ut
           JOIN transcription t
             ON t.id = ut.transcription_id
-         WHERE ut.user_id = ?;
+         WHERE ut.user_id = ?
       ORDER BY ut.created DESC;
         """,
         (user_id,),
