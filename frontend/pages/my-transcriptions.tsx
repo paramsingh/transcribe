@@ -4,20 +4,9 @@ import { getUser } from "../utils/getUser";
 import { getTranscriptionsForUser } from "../client/api-client";
 import { TranscriberHead } from "../components/TranscriberHead";
 import { LogoAndTitle } from "../components/LogoAndTitle";
-import {
-  Heading,
-  Spinner,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@chakra-ui/react";
-import Link from "next/link";
+import { Heading, Spinner } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import { TranscriptionTable } from "../components/TranscriptionTable";
 export default function MyTranscriptions() {
   const [user, setUser] = useState<any>(null);
   const [transcriptions, setTranscriptions] = useState<any>(null);
@@ -60,46 +49,7 @@ export default function MyTranscriptions() {
           Your transcriptions
         </Heading>
         {loading && <Spinner size="lg" marginLeft={"50%"} />}
-        {!loading && (
-          <TableContainer>
-            <Table variant="unstyled">
-              <Thead>
-                <Tr>
-                  <Th style={{ width: "100%" }}>Video link</Th>
-                  <Th>Transcription link</Th>
-                  <Th>Status</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {transcriptions.map(
-                  (transcription: {
-                    token: string;
-                    link: string;
-                    summary: string;
-                  }) => {
-                    return (
-                      <Tr key={transcription.token}>
-                        <Td>
-                          <Link href={transcription.link}>
-                            {transcription.link}
-                          </Link>
-                        </Td>
-                        <Td>
-                          <Link href={`/result/${transcription.token}`}>
-                            Link
-                          </Link>
-                        </Td>
-                        <Td>
-                          {transcription.summary ? "Complete" : "In progress"}
-                        </Td>
-                      </Tr>
-                    );
-                  }
-                )}
-              </Tbody>
-            </Table>
-          </TableContainer>
-        )}
+        {!loading && <TranscriptionTable transcriptions={transcriptions} />}
       </main>
     </>
   );
