@@ -207,7 +207,7 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT t.token, t.link, t.result, t.improvement, t.summary, t.transcribe_failed, t.improvement_failed
+        SELECT t.token, t.link, t.result, t.improvement, t.summary, t.transcribe_failed, t.improvement_failed, ut.created
           FROM user_transcription_attempt ut
           JOIN transcription t
             ON t.id = ut.transcription_id
