@@ -94,6 +94,7 @@ def get_context(question: str) -> str:
         print(len(tokens))
         if token_count + len(tokens) > MAX_PROMPT_TOKENS:
             break
+        token_count += len(tokens)
         current_prompt.append(groups[i])
 
     return "\n\n".join(current_prompt)
