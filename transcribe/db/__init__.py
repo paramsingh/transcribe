@@ -61,5 +61,19 @@ def create_tables() -> None:
               IF NOT EXISTS user_transcription_attempt_ndx
                          ON user_transcription_attempt(user_id, transcription_id);
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS embedding (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            transcription_id    INTEGER NOT NULL,
+            embedding_json      TEXT NOT NULL,
+            created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        )
+    """)
+    cursor.execute("""
+        CREATE UNIQUE INDEX
+              IF NOT EXISTS embedding_ndx
+                         ON embedding(transcription_id);
+    """)
+
     connection.commit()
     connection.close()
