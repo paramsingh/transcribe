@@ -41,7 +41,7 @@ def group_sentences(transcription: str):
     return groups
 
 
-def get_embeddings_for_transcription(tr: str):
+def generate_embeddings_for_transcription(tr: str):
     """ Gets OpenAI embeddings for a transcription, for semantic search. """
     groups = group_sentences(tr)
     embeddings = []
@@ -51,7 +51,6 @@ def get_embeddings_for_transcription(tr: str):
             model="text-embedding-ada-002"
         )
         vector = embedding['data'][0]['embedding']
-        print("length of embedding: ", len(vector))
         embeddings.append(vector)
     return {"groups": groups, "embeddings": embeddings}
 
@@ -59,7 +58,7 @@ def get_embeddings_for_transcription(tr: str):
 def write_embeddings():
     db = init_db()
     transcription = get_transcription_by_link(db, KARPATHY_VIDEO_LINK)
-    embeddings = get_embeddings_for_transcription(
+    embeddings = generate_embeddings_for_transcription(
         json.loads(transcription['result'])['transcription'],
     )
     with open("embeddings.json", "w") as f:
@@ -71,9 +70,8 @@ def get_embeddings():
         return json.load(f)
 
 
-def get_context(question: str) -> str:
+def get_context(question: str, data: dict) -> str:
     """ Gets a context for a question. """
-    data = get_embeddings()
     embeddings = data['embeddings']
     groups = data['groups']
     question_embedding = openai.Embedding.create(
@@ -91,7 +89,6 @@ def get_context(question: str) -> str:
     token_count = 0
     for i in sorted_indices:
         tokens = tokenizer.encode(groups[i])
-        print(len(tokens))
         if token_count + len(tokens) > MAX_PROMPT_TOKENS:
             break
         token_count += len(tokens)
@@ -100,12 +97,15 @@ def get_context(question: str) -> str:
     return "\n\n".join(current_prompt)
 
 
-def get_answer(question: str) -> str:
+def get_answer(question: str, embeddings: dict) -> str:
     """ Gets an answer for a question. """
-    context = get_context(question)
-    print(len(tokenizer.encode(context)))
+    context = get_context(question, embeddings)
     response = openai.Completion.create(
-        prompt=f"Answer the question based on the context below, and if the question can't be answered based on the context, say \"I don't know\"\n\nContext: {context}\n\n---\n\nQuestion: {question}\nAnswer:",
+        prompt=f"""
+Answer the question based on the context below,
+and if the question can't be answered based on the context,
+say \"I don't know\"\n\nContext: {context}\n\n---\n\nQuestion: {question}\nAnswer:
+""",
         temperature=0,
         top_p=1,
         frequency_penalty=0,
@@ -114,13 +114,3 @@ def get_answer(question: str) -> str:
         model="text-davinci-003",
     )
     return response["choices"][0]["text"].strip()
-
-
-def main():
-    question = input("Question: ")
-    print(get_answer(question))
-
-
-if __name__ == '__main__':
-    openai.api_key = config.OPENAI_API_KEY
-    main()
