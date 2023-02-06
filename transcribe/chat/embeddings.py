@@ -17,9 +17,9 @@ MAX_TOKENS = 1500
 MAX_PROMPT_TOKENS = 1800
 
 
-def group_sentences(transcription: str):
+def group_sentences(text: str):
     """ Groups sentences into groups of MAX_TOKENS tokens. """
-    sentences = [s.strip() for s in transcription.split(".") if s.strip()]
+    sentences = [s.strip() for s in text.split(".") if s.strip()]
     groups = []
     count = 0
     current_group = []
@@ -41,9 +41,9 @@ def group_sentences(transcription: str):
     return groups
 
 
-def generate_embeddings_for_transcription(tr: str):
+def generate_embeddings_for_transcription(text: str):
     """ Gets OpenAI embeddings for a transcription, for semantic search. """
-    groups = group_sentences(tr)
+    groups = group_sentences(text)
     embeddings = []
     for group in groups:
         embedding = openai.Embedding.create(
@@ -53,21 +53,6 @@ def generate_embeddings_for_transcription(tr: str):
         vector = embedding['data'][0]['embedding']
         embeddings.append(vector)
     return {"groups": groups, "embeddings": embeddings}
-
-
-def write_embeddings():
-    db = init_db()
-    transcription = get_transcription_by_link(db, KARPATHY_VIDEO_LINK)
-    embeddings = generate_embeddings_for_transcription(
-        json.loads(transcription['result'])['transcription'],
-    )
-    with open("embeddings.json", "w") as f:
-        json.dump(embeddings, f)
-
-
-def get_embeddings():
-    with open("embeddings.json", "r") as f:
-        return json.load(f)
 
 
 def get_context(question: str, data: dict) -> str:
