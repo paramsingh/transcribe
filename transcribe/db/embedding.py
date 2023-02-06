@@ -10,9 +10,9 @@ def get_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: i
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT id, transcription_id, embedding_json
-        FROM embedding
-        WHERE transcription_id = ?
+            SELECT id, transcription_id, embedding_json
+              FROM embedding
+             WHERE transcription_id = ?
         """,
         (transcription_id,),
     )
@@ -47,7 +47,7 @@ def save_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: 
     cursor.execute(
         """
         INSERT INTO embedding (transcription_id, embedding_json)
-        VALUES (?, ?)
+             VALUES (?, ?)
         """,
         (transcription_id, embedding_json),
     )
