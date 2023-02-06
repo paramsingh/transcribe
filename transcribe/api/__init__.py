@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, Response, request, send_file
 from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
+import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
 
 api_bp = Blueprint("api_v1", __name__)
@@ -67,6 +68,31 @@ def get_user_transcriptions(token) -> Response:
         return jsonify({"error": "unauthorized"}), 401
     result = transcription_db.get_user_transcription_attempts(db, user['id'])
     return jsonify({"transcriptions": result})
+
+
+@api_bp.route("/transcription/<token>/embeddings", methods=["POST"])
+@cross_origin()
+def request_embeddings_endpoint(token: str):
+    # keeping this for authorized users for now
+    user = get_user(request)
+    if not user:
+        return jsonify({"error": "unauthorized"}), 401
+
+    if not token:
+        return jsonify({"error": "no token"}), 400
+
+    db = get_flask_db()
+    transcription = transcription_db.get_transcription(db, token)
+    if not transcription:
+        return jsonify({"error": "not found"}), 404
+
+    embeddings = embedding_db.get_embeddings_for_transcription(
+        db, transcription['id'])
+    if embeddings:
+        return jsonify({"success": True})
+
+    embedding_db.create_embedding_request(db, transcription['id'])
+    return jsonify({"success": True})
 
 
 @api_bp.route("/internal/transcription/<token>/file", methods=["GET"])

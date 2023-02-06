@@ -46,6 +46,7 @@ def create_tables() -> None:
     create_session_table(cursor)
     create_magic_link_table(cursor)
 
+    # user transcription attempt table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS user_transcription_attempt (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,6 +62,8 @@ def create_tables() -> None:
               IF NOT EXISTS user_transcription_attempt_ndx
                          ON user_transcription_attempt(user_id, transcription_id);
     """)
+
+    # embedding table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS embedding (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +76,19 @@ def create_tables() -> None:
         CREATE UNIQUE INDEX
               IF NOT EXISTS embedding_ndx
                          ON embedding(transcription_id);
+    """)
+
+    # embedding request tabls
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS embedding_request (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            transcription_id    INTEGER NOT NULL,
+            created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (transcription_id) REFERENCES transcription(id)
+        );
+    """)
+    cursor.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS embedding_request_ndx ON embedding_request(transcription_id);
     """)
 
     connection.commit()

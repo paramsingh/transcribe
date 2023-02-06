@@ -52,3 +52,40 @@ def save_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: 
         (transcription_id, embedding_json),
     )
     db.commit()
+
+
+def create_embedding_request(db: sqlite3.Connection, transcription_id: int):
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        INSERT INTO embedding_request (transcription_id)
+                VALUES (?)
+        """,
+        (transcription_id,),
+    )
+    db.commit()
+
+
+def get_one_embedding_request(db: sqlite3.Connection) -> Optional[dict]:
+    cursor = db.cursor()
+
+    # get the first embedding request that doesn't have an embedding
+    cursor.execute(
+        """
+            SELECT er.id, er.transcription_id, t.result
+              FROM embedding_request er
+              JOIN transcription t ON t.id = er.transcription_id
+         LEFT JOIN embedding e ON e.transcription_id = er.transcription_id
+             WHERE e.id IS NULL
+          ORDER BY er.id
+             LIMIT 1
+        """
+    )
+    row = cursor.fetchone()
+    if not row:
+        return None
+    return {
+        'id': row[0],
+        'transcription_id': row[1],
+        'result': row[2],
+    }
