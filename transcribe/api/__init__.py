@@ -72,7 +72,6 @@ def get_user_transcriptions(token) -> Response:
         "summary_exists": attempt["summary"] is not None,
         "improvement_failed": attempt["improvement_failed"],
         "transcribe_failed": attempt["transcribe_failed"],
-        "created_at": attempt["created_at"],
     } for attempt in attempts]
     return jsonify({"transcriptions": result})
 
