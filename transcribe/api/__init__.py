@@ -65,7 +65,15 @@ def get_user_transcriptions(token) -> Response:
         return jsonify({"error": "unauthorized"}), 401
     if user['token'] != token:
         return jsonify({"error": "unauthorized"}), 401
-    result = transcription_db.get_user_transcription_attempts(db, user['id'])
+    attempts = transcription_db.get_user_transcription_attempts(db, user['id'])
+    result = [{
+        "token": attempt["token"],
+        "link": attempt["link"],
+        "summary_exists": attempt["summary"] is not None,
+        "improvement_failed": attempt["improvement_failed"],
+        "transcribe_failed": attempt["transcribe_failed"],
+        "created_at": attempt["created_at"],
+    } for attempt in attempts]
     return jsonify({"transcriptions": result})
 
 
