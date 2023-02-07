@@ -66,7 +66,7 @@ def create_tables() -> None:
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             transcription_id    INTEGER NOT NULL,
             embedding_json      TEXT NOT NULL,
-            created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     cursor.execute("""
