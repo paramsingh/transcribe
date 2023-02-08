@@ -20,7 +20,7 @@ import {
   Portal,
   Text,
 } from "@chakra-ui/react";
-import InfoIcon from "@chakra-ui/icon";
+import { InfoIcon, CopyIcon } from "@chakra-ui/icons";
 import styles from "../styles/Home.module.css";
 import { getDetailsForToken, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
@@ -31,6 +31,8 @@ import { LogoAndTitle } from "../components/LogoAndTitle";
 import { TranscriberHead } from "../components/TranscriberHead";
 import { getUser } from "../utils/getUser";
 import { getSessionToken } from "../utils/sessionTokenUtils";
+import { CopyLink } from "../components/CopyLink";
+import { PopoverInfo } from "../components/PopoverInfo";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,6 +43,7 @@ export default function Transcription() {
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
   const [waiting, setWaiting] = useState<boolean>(true);
   const [user, setUser] = useState<any>(null);
+  const [copied, setCopied] = useState<boolean>(false);
   const { push } = useRouter();
 
   const listenForResults = (id: string) => {
@@ -133,29 +136,12 @@ export default function Transcription() {
               Submit
             </Button>
             {submitted && (
-              <Popover>
-                <PopoverTrigger>
-                  <IconButton
-                    icon={<InfoIcon />}
-                    aria-label="info"
-                    marginLeft={2}
-                  />
-                </PopoverTrigger>
-                <Portal>
-                  <PopoverContent>
-                    <PopoverArrow />
-                    <PopoverCloseButton />
-                    <PopoverHeader>Note</PopoverHeader>
-                    <PopoverBody>
-                      We will redirect you to the transcription when it is
-                      ready, it may take some time. If you do not want to wait,
-                      come back to{" "}
-                      <Link href={`/result/${transcriptionID}`}>this link</Link>{" "}
-                      later and we should have it ready.
-                    </PopoverBody>
-                  </PopoverContent>
-                </Portal>
-              </Popover>
+              <>
+                <PopoverInfo transcriptionID={transcriptionID} />
+                <CopyLink
+                  link={`https://transcribe.param.codes/result/${transcriptionID}`}
+                />
+              </>
             )}
           </Box>
           <Box>
