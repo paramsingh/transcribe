@@ -34,30 +34,33 @@ export default function TranscriptionResult() {
   const router = useRouter();
   const refId = router.query.refId as string;
 
+  const getTranscriptionDetails = () => {
+    getDetailsForToken(refId)
+      .then((data) => {
+        if (data["result"]) {
+          setTranscriptionInProgress(false);
+          setLink(data["link"]);
+          setTranscriptionResult(JSON.parse(data["result"]));
+          setImprovement(data["improvement"]);
+          setSummary(data["summary"]);
+          setWaiting(false);
+        } else {
+          setTranscriptionInProgress(true);
+        }
+      })
+      .catch((e) => {
+        setWaiting(false);
+        if (intervalID) {
+          clearInterval(intervalID);
+        }
+      });
+  };
+
   useEffect(() => {
     if (waiting && refId) {
       if (intervalID) return;
-      const id = setInterval(() => {
-        getDetailsForToken(refId)
-          .then((data) => {
-            if (data["result"]) {
-              setTranscriptionInProgress(false);
-              setLink(data["link"]);
-              setTranscriptionResult(JSON.parse(data["result"]));
-              setImprovement(data["improvement"]);
-              setSummary(data["summary"]);
-              setWaiting(false);
-            } else {
-              setTranscriptionInProgress(true);
-            }
-          })
-          .catch((e) => {
-            setWaiting(false);
-            if (intervalID) {
-              clearInterval(intervalID);
-            }
-          });
-      }, 30 * 1000);
+      getTranscriptionDetails();
+      const id = setInterval(getTranscriptionDetails, 30 * 1000);
       setIntervalID(id);
     }
   }, [refId, waiting, intervalID]);
