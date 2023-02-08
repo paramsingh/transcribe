@@ -21,6 +21,9 @@ export const submitLink = async (link: string) => {
 
 export const getDetailsForToken = async (token: string) => {
   const response = await fetch(`${BASE_URL}/transcription/${token}/details`);
+  if (response.status === 404) {
+    throw new Error("Not found");
+  }
   return response.json();
 };
 

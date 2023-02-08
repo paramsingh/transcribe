@@ -28,28 +28,46 @@ export default function TranscriptionResult() {
   const [showData, setShowData] = useState<DataType>(DataType.TRANSCRIPTION);
   const [summary, setSummary] = useState<string>("");
   const [link, setLink] = useState<string>("");
+  const [intervalID, setIntervalID] = useState<any>(null);
+  const [transcriptionInProgress, setTranscriptionInProgress] =
+    useState<boolean>(false);
   const router = useRouter();
   const refId = router.query.refId as string;
 
   useEffect(() => {
     if (waiting && refId) {
-      getDetailsForToken(refId).then((data) => {
-        if (data["result"]) {
-          setLink(data["link"]);
-          setTranscriptionResult(JSON.parse(data["result"]));
-          setImprovement(data["improvement"]);
-          setSummary(data["summary"]);
-          setWaiting(false);
-        }
-      });
+      if (intervalID) return;
+      const id = setInterval(() => {
+        getDetailsForToken(refId)
+          .then((data) => {
+            if (data["result"]) {
+              setTranscriptionInProgress(false);
+              setLink(data["link"]);
+              setTranscriptionResult(JSON.parse(data["result"]));
+              setImprovement(data["improvement"]);
+              setSummary(data["summary"]);
+              setWaiting(false);
+            } else {
+              setTranscriptionInProgress(true);
+            }
+          })
+          .catch((e) => {
+            setWaiting(false);
+            if (intervalID) {
+              clearInterval(intervalID);
+            }
+          });
+      }, 30 * 1000);
+      setIntervalID(id);
     }
-  }, [refId, waiting]);
+  }, [refId, waiting, intervalID]);
 
   useEffect(() => {
     if (improvement) {
       setShowData(DataType.IMPROVEMENT);
+      clearInterval(intervalID);
     }
-  }, [improvement]);
+  }, [improvement, intervalID]);
 
   return (
     <>
@@ -57,14 +75,24 @@ export default function TranscriptionResult() {
       <main>
         <LogoAndTitle />
         <section>
-          {/*<header><h2>{refId}</h2></header>*/}
-          {waiting && <Spinner />}
+          {waiting && (
+            <>
+              <Spinner />
+              {transcriptionInProgress ? (
+                <Text fontSize={"xl"}>
+                  This transcription is still in progress. Please come back
+                  later (or leave this page open and we will update it
+                  automatically!).
+                </Text>
+              ) : (
+                <Text fontSize="xl">Getting your transcription...</Text>
+              )}
+            </>
+          )}
           {!waiting && !transcriptionResult && (
-            <Box paddingTop={10} paddingBottom={10}>
-              <Heading as={"h5"}>
-                Transcription is non-existent or still in progress!
-              </Heading>
-            </Box>
+            <Heading as={"h5"} size={"md"}>
+              Transcription does not exist. {":("}
+            </Heading>
           )}
           {/*** TODO: think about hiding this entirely */}
           {!waiting && transcriptionResult && !improvement && (

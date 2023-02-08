@@ -1,38 +1,16 @@
 import { useEffect, useState } from "react";
-import Head from "next/head";
-import Image from "next/image";
 import { Inter } from "@next/font/google";
-import {
-  Spinner,
-  Box,
-  Heading,
-  Input,
-  Button,
-  Flex,
-  IconButton,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverHeader,
-  Portal,
-  Text,
-} from "@chakra-ui/react";
-import { InfoIcon, CopyIcon } from "@chakra-ui/icons";
-import styles from "../styles/Home.module.css";
+import { Box, Heading, Input, Button, Text } from "@chakra-ui/react";
 import { getDetailsForToken, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
 import { useRouter } from "next/router";
-import scriber from "../public/scriber.png";
-import Link from "next/link";
 import { LogoAndTitle } from "../components/LogoAndTitle";
 import { TranscriberHead } from "../components/TranscriberHead";
 import { getUser } from "../utils/getUser";
 import { getSessionToken } from "../utils/sessionTokenUtils";
 import { CopyLink } from "../components/CopyLink";
 import { PopoverInfo } from "../components/PopoverInfo";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -43,7 +21,6 @@ export default function Transcription() {
   const [listenID, setListenID] = useState<any>(null); // TODO: type this
   const [waiting, setWaiting] = useState<boolean>(true);
   const [user, setUser] = useState<any>(null);
-  const [copied, setCopied] = useState<boolean>(false);
   const { push } = useRouter();
 
   const listenForResults = (id: string) => {

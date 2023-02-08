@@ -26,7 +26,7 @@ export default function MyTranscriptions() {
         alert("You must be signed in to view this page");
         router.push("/login");
       });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!user) return;
