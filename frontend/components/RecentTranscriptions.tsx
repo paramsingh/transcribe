@@ -20,7 +20,7 @@ export const RecentTranscriptions = () => {
       <Heading size="xl" paddingBottom={5}>
         Recent Transcriptions
       </Heading>
-      <TranscriptionTable transcriptions={transcriptions} />
+      <TranscriptionTable transcriptions={transcriptions} showOnlySuccessful />
     </>
   );
 };

@@ -12,6 +12,7 @@ import Link from "next/link";
 
 export const TranscriptionTable = ({
   transcriptions,
+  showOnlySuccessful = false,
 }: {
   transcriptions: {
     token: string;
@@ -20,6 +21,7 @@ export const TranscriptionTable = ({
     improvement_failed: boolean;
     transcribe_failed: boolean;
   }[];
+  showOnlySuccessful?: boolean;
 }) => {
   const getStatusBadge = (transcription: {
     summary_exists: boolean;
@@ -29,6 +31,7 @@ export const TranscriptionTable = ({
     if (transcription.summary_exists) {
       return <Badge colorScheme="green">Complete</Badge>;
     } else {
+      if (showOnlySuccessful) return null;
       if (transcription.improvement_failed || transcription.transcribe_failed) {
         return <Badge colorScheme="red">Error</Badge>;
       } else {
@@ -49,6 +52,8 @@ export const TranscriptionTable = ({
         </Thead>
         <Tbody>
           {transcriptions.map((transcription) => {
+            const statusBadge = getStatusBadge(transcription);
+            if (showOnlySuccessful && !statusBadge) return null;
             return (
               <Tr key={transcription.token}>
                 <Td>
