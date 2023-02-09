@@ -66,14 +66,14 @@ def get_user_transcriptions(token) -> Response:
     if user['token'] != token:
         return jsonify({"error": "unauthorized"}), 401
     attempts = transcription_db.get_user_transcription_attempts(db, user['id'])
-    result = [{
-        "token": attempt["token"],
-        "link": attempt["link"],
-        "summary_exists": attempt["summary"] is not None,
-        "improvement_failed": attempt["improvement_failed"],
-        "transcribe_failed": attempt["transcribe_failed"],
-    } for attempt in attempts]
-    return jsonify({"transcriptions": result})
+    return jsonify({"transcriptions": attempts})
+
+
+@api_bp.route("/recent-transcriptions", methods=["GET"])
+@cross_origin()
+def get_recent_transcriptions_endpoint():
+    transcriptions = transcription_db.get_recent_transcriptions(get_flask_db())
+    return jsonify({"transcriptions": transcriptions})
 
 
 @api_bp.route("/internal/transcription/<token>/file", methods=["GET"])

@@ -63,7 +63,7 @@ export default function TranscriptionResult() {
       const id = setInterval(getTranscriptionDetails, 30 * 1000);
       setIntervalID(id);
     }
-  }, [refId, waiting, intervalID]);
+  }, [refId, waiting, intervalID, getTranscriptionDetails]);
 
   useEffect(() => {
     if (improvement) {

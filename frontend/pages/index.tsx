@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Inter } from "@next/font/google";
-import { Box, Heading, Input, Button, Text } from "@chakra-ui/react";
+import { Box, Heading, Input, Button, Text, Divider } from "@chakra-ui/react";
 import { getDetailsForToken, submitLink } from "../client/api-client";
 import { validateUrl } from "../utils/validateUrl";
 import { useRouter } from "next/router";
@@ -11,6 +11,7 @@ import { getSessionToken } from "../utils/sessionTokenUtils";
 import { CopyLink } from "../components/CopyLink";
 import { PopoverInfo } from "../components/PopoverInfo";
 import Link from "next/link";
+import { RecentTranscriptions } from "../components/RecentTranscriptions";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -80,19 +81,19 @@ export default function Transcription() {
           <LogoAndTitle />
           {user ? (
             <>
-              <Text fontSize="xl" paddingBottom={10}>
+              <Text fontSize="xl" paddingBottom={5}>
                 Welcome, {user.email}! You can{" "}
                 <Link href="/logout">sign out here.</Link> See your previous
                 transcriptions <Link href="/my-transcriptions">here.</Link>
               </Text>
             </>
           ) : (
-            <Text fontSize="xl" paddingBottom={10}>
+            <Text fontSize="xl" paddingBottom={5}>
               Welcome! <Link href="/login">Sign in</Link> to keep track of
               things you&apos;ve transcribed.
             </Text>
           )}
-          <Heading as={"h2"} size="md" paddingBottom={10}>
+          <Heading as={"h2"} size="md" paddingBottom={5}>
             Transcribe your favorite YouTube videos using the magic of AI.
           </Heading>
           <Box paddingBottom={10}>
@@ -103,12 +104,13 @@ export default function Transcription() {
               placeholder={"Enter a YouTube link for us to transcribe."}
             />
           </Box>
-          <Box paddingBottom={200}>
+          <Box marginBottom={5}>
             <Button
               colorScheme={"blue"}
               onClick={(e) => submit()}
               isLoading={submitted}
               loadingText={"Transcribing"}
+              marginBottom={5}
             >
               Submit
             </Button>
@@ -120,8 +122,14 @@ export default function Transcription() {
                 />
               </>
             )}
+            <Divider marginBottom={5} />
+            <RecentTranscriptions />
           </Box>
+          <Divider marginBottom={5} />
           <Box>
+            <Heading as={"h2"} size="lg" paddingBottom={5}>
+              Come talk to me!
+            </Heading>
             If this seems like something you&lsquo;d find useful or you try it
             out, please reach out to me on Twitter, as I&lsquo;d love to talk:{" "}
             <Link href="https://twitter.com/iliekcomputers">

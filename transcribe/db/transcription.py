@@ -1,7 +1,9 @@
 from uuid import uuid4
 from transcribe.db import init_db
-from typing import Union, Optional
+from typing import Union, Optional, List
 import sqlite3
+
+RECENT_TRANSCRIPTION_COUNT = 5
 
 
 def get_transcription(db, token: str) -> Union[dict, None]:
@@ -207,7 +209,12 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT t.token, t.link, t.summary, t.transcribe_failed, t.improvement_failed, ut.created
+        SELECT t.token,
+               t.link,
+               CASE WHEN summary IS NULL then 0 else 1 END,
+               t.transcribe_failed,
+               t.improvement_failed,
+               ut.created
           FROM user_transcription_attempt ut
           JOIN transcription t
             ON t.id = ut.transcription_id
@@ -219,7 +226,34 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
     return [{
         "token": row[0],
         "link": row[1],
-        "summary": row[2],
+        "summary_exists": bool(row[2]),
+        "transcribe_failed": row[3],
+        "improvement_failed": row[4],
+        "created": str(row[5]),
+    } for row in cursor.fetchall()]
+
+
+def get_recent_transcriptions(db: sqlite3.Connection, limit: int = RECENT_TRANSCRIPTION_COUNT) -> List[dict]:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        SELECT token,
+               link,
+               CASE WHEN summary IS NULL then 0 else 1 END,
+               transcribe_failed,
+               improvement_failed,
+               created
+          FROM transcription
+      ORDER BY created DESC
+         LIMIT ?
+          """,
+        (limit,)
+    )
+
+    return [{
+        "token": row[0],
+        "link": row[1],
+        "summary_exists": bool(row[2]),
         "transcribe_failed": row[3],
         "improvement_failed": row[4],
         "created": str(row[5]),

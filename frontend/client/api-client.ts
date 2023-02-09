@@ -42,3 +42,8 @@ export const getTranscriptionsForUser = async (userToken: string) => {
   });
   return response.json();
 };
+
+export const getRecentTranscriptions = async () => {
+  const response = await fetch(`${BASE_URL}/recent-transcriptions`);
+  return response.json();
+};
