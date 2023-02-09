@@ -1,6 +1,8 @@
 import { Box } from "@chakra-ui/react";
 
 const getVideoId = (link: string) => {
+  // TODO: make work with other youtube links
+  // https://www.youtube.com/watch?v=mBnBH8Ga9-w&t=6322s
   if (link.includes("youtu.be")) {
     return link.split("/")[3];
   }
