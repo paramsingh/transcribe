@@ -31,8 +31,8 @@ export const TranscriptionTable = ({
     if (transcription.summary_exists) {
       return <Badge colorScheme="green">Complete</Badge>;
     } else {
-      if (showOnlySuccessful) return null;
       if (transcription.improvement_failed || transcription.transcribe_failed) {
+        if (showOnlySuccessful) return null;
         return <Badge colorScheme="red">Error</Badge>;
       } else {
         return <Badge colorScheme="yellow">In progress</Badge>;
