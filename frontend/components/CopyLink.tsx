@@ -12,6 +12,7 @@ export const CopyLink = ({ link }: { link: string }) => {
         setCopied(true);
       }}
       onMouseEnter={() => setCopied(false)}
+      marginBottom={5}
     >
       {!copied ? "Copy transcription link for later." : "Copied!"}
     </Button>

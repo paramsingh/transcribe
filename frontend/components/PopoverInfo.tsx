@@ -25,6 +25,7 @@ export const PopoverInfo = ({
           aria-label="info"
           marginLeft={2}
           marginRight={2}
+          marginBottom={5}
         />
       </PopoverTrigger>
       <Portal>
