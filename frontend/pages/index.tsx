@@ -96,7 +96,7 @@ export default function Transcription() {
           <Heading as={"h2"} size="md" paddingBottom={5}>
             Transcribe your favorite YouTube videos using the magic of AI.
           </Heading>
-          <Box paddingBottom={10}>
+          <Box paddingBottom={5}>
             <Input
               size="lg"
               onChange={(e) => setLink(e.target.value)}
