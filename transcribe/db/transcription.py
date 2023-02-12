@@ -71,7 +71,7 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT token, link, result, improvement, summary
+        SELECT token, link, result, improvement, summary, id
           FROM transcription
          WHERE (improvement is NULL OR summary IS NULL)
            AND result is NOT NULL
@@ -89,6 +89,7 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
             "result": result[2],
             "improvement": result[3],
             "summary": result[4],
+            "id": result[5],
         }
     return None
 

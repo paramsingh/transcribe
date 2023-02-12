@@ -8,12 +8,14 @@ from transcribe.db.transcription import (
     add_summary,
     mark_improvement_failed
 )
+import transcribe.db.embedding as db_embedding
 import openai
 import json
 import schedule
 import time
 import sentry_sdk
 from transcribe.processor import sentry_report
+from gpt_index import Document, GPTSimpleVectorIndex
 
 if not DEVELOPMENT_MODE:
     sentry_sdk.init(
@@ -67,6 +69,22 @@ class Improver:
                 print("Summarization failed with error: ", e)
                 mark_improvement_failed(self.db, unimproved["token"])
                 return
+
+        print("Creating index...")
+        try:
+            embedding = db_embedding.get_embeddings_for_transcription(
+                self.db, unimproved["id"])
+            if not embedding:
+                embedding = self.create_embeddings(unimproved["result"])
+                db_embedding.save_embeddings_for_transcription(
+                    self.db, unimproved["id"], embedding)
+            print("Done creating index!")
+        except Exception as e:
+            sentry_report(e)
+            print("Index creation failed with error: ", e)
+            mark_improvement_failed(self.db, unimproved["token"])
+            return
+
         print("Done improving transcription with link: ", unimproved["link"])
 
     def get_word_groups(self, raw: str) -> List[str]:
@@ -125,6 +143,12 @@ Text:
 
 Summary:"""
         return self.group_and_make_openai_requests(raw, prompt)
+
+    def create_embeddings(self, raw: str) -> str:
+        """ Create embeddings for the text using GPT-3 """
+        document = Document(raw)
+        index = GPTSimpleVectorIndex([document])
+        return index.save_to_string()
 
 
 if __name__ == "__main__":
