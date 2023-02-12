@@ -9,6 +9,7 @@ from transcribe.db.transcription import (
     mark_improvement_failed
 )
 import transcribe.db.embedding as db_embedding
+import os
 import openai
 import json
 import schedule
@@ -153,6 +154,7 @@ Summary:"""
 
 if __name__ == "__main__":
     openai.api_key = OPENAI_API_KEY
+    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
     improver = Improver()
     schedule.every(1).minutes.do(improver.improve_one_transcription)
     while True:
