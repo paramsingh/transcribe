@@ -22,7 +22,7 @@ def get_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: i
     return {
         'id': row[0],
         'transcription_id': row[1],
-        'embedding_json': json.loads(row[2]),
+        'embedding_json': row[2],
     }
 
 

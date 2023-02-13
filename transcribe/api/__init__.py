@@ -3,9 +3,12 @@ import os
 
 from flask_cors import cross_origin  # type: ignore
 from flask import Blueprint, jsonify, Response, request, send_file
+from gpt_index import GPTSimpleVectorIndex
+
 from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
+import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
 
 api_bp = Blueprint("api_v1", __name__)
@@ -88,3 +91,22 @@ def download_file_endpoint(token: str):
     if not os.path.exists(fn):
         return jsonify({"error": f"file not found: {token}"}), 404
     return send_file(fn, mimetype="audio/ogg")
+
+
+@api_bp.route("/transcription/<token>/ask", methods=["POST"])
+@cross_origin()
+def ask(token: str):
+    if not token:
+        return jsonify({"error": "no token"}), 400
+    request_data = typing.cast(typing.Dict[str, str], request.get_json())
+    question = request_data.get("question")
+    if not question:
+        return jsonify({"error": "no question"}), 400
+
+    db = get_flask_db()
+    transcription = transcription_db.get_transcription(db, token)
+    embeddings = embedding_db.get_embeddings_for_transcription(
+        db, transcription['id'])
+    index = GPTSimpleVectorIndex.load_from_string(embeddings['embedding_json'])
+    answer = index.query(question)
+    return jsonify({"answer": str(answer)})

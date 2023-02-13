@@ -1,4 +1,5 @@
 import sentry_sdk
+import os
 
 import transcribe.db as db
 from flask import Flask, g
@@ -40,4 +41,5 @@ def close_db(e):
 
 if __name__ == "__main__":
     db.create_tables()
+    os.environ["OPENAI_API_KEY"] = config.OPENAI_API_KEY
     app.run(debug=config.DEVELOPMENT_MODE, port=6550)

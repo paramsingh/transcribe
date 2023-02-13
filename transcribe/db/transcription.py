@@ -11,7 +11,8 @@ def get_transcription(db, token: str) -> Union[dict, None]:
 
     cursor.execute(
         """
-        SELECT token, link, result, improvement, summary FROM transcription WHERE token = ?;
+        SELECT token, link, result, improvement, summary, id
+          FROM transcription WHERE token = ?;
     """,
         (token,),
     )
@@ -24,6 +25,7 @@ def get_transcription(db, token: str) -> Union[dict, None]:
             "result": result[2],
             "improvement": result[3],
             "summary": result[4],
+            "id": result[5],
         }
     return None
 
