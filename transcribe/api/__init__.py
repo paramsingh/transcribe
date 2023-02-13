@@ -105,6 +105,8 @@ def ask(token: str):
 
     db = get_flask_db()
     transcription = transcription_db.get_transcription(db, token)
+    if transcription is None:
+        return jsonify({"error": "not found"}), 404
     embeddings = embedding_db.get_embeddings_for_transcription(
         db, transcription['id'])
     index = GPTSimpleVectorIndex.load_from_string(embeddings['embedding_json'])

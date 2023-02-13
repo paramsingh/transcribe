@@ -47,3 +47,14 @@ export const getRecentTranscriptions = async () => {
   const response = await fetch(`${BASE_URL}/recent-transcriptions`);
   return response.json();
 };
+
+export const getAnswer = async (token: string, question: string) => {
+  const response = await fetch(`${BASE_URL}/transcription/${token}/ask`, {
+    method: "POST",
+    body: JSON.stringify({ question }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json();
+};
