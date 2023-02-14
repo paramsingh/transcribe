@@ -74,7 +74,7 @@ class Improver:
         print("Creating index...")
         try:
             embedding = db_embedding.get_embeddings_for_transcription(
-                self.db, unimproved["id"])
+                self.db, unimproved["id"], unimproved["link"])
             if not embedding:
                 embedding = self.create_embeddings(unimproved["result"])
                 db_embedding.save_embeddings_for_transcription(
@@ -145,9 +145,13 @@ Text:
 Summary:"""
         return self.group_and_make_openai_requests(raw, prompt)
 
-    def create_embeddings(self, raw: str) -> str:
+    def create_embeddings(self, raw: str, link: str) -> str:
         """ Create embeddings for the text using GPT-3 """
-        document = Document(raw)
+        text = f"""
+The following is the transcription of a youtube video (Link: {link}).
+
+{raw}"""
+        document = Document(text)
         index = GPTSimpleVectorIndex([document])
         return index.save_to_string()
 
