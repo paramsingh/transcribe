@@ -6,6 +6,40 @@ notes: https://docs.google.com/document/d/17_RQSM3_GgVwC3HanT350tm9OaY-WZ9K4y6ZP
 
 trello: https://trello.com/b/523mepi1/transcribe
 
+# How to run
+
+```
+pip install -r requirements.txt
+pip install -r requirements_dev.txt
+```
+
+Create config file, and fill in values as needed
+
+```
+cp transcribe/config.py.sample transcribe/config.py
+```
+
+Now, run the Flask API server.
+
+```
+python -m transcribe.api
+```
+
+Run the frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+There's background scripts that you might want to run.
+
+```
+python -m transcribe.processor.transcribe # transcribes videos
+python -m transcribe.processor.improve # improves transcriptions and creates embeddings
+```
+
 # API
 
 - Create a request to transcribe a URL: `POST /api/v1/transcribe`
@@ -43,10 +77,10 @@ npm run dev
 
 # Run tests
 
-First, install `pytest`.
+First, install dev requirements.
 
 ```
-pip install pytest
+pip install -r requirements_dev.txt
 ```
 
 Then, just run:
