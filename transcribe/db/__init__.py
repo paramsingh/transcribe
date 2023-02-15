@@ -2,15 +2,13 @@ import sqlite3
 from transcribe.login.db import create_user_table, create_session_table, create_magic_link_table
 
 
-def init_db() -> sqlite3.Connection:
-    # TODO: this path needs to be a config option.
-    connection = sqlite3.connect("database.db", detect_types=sqlite3.PARSE_DECLTYPES |
+def init_db(database_filename: str = "database.db") -> sqlite3.Connection:
+    connection = sqlite3.connect(database_filename, detect_types=sqlite3.PARSE_DECLTYPES |
                                  sqlite3.PARSE_COLNAMES)
     return connection
 
 
-def create_tables() -> None:
-    connection = init_db()
+def create_tables(connection: sqlite3.Connection) -> None:
     cursor = connection.cursor()
     cursor.execute("PRAGMA foreign_keys = ON;")
     cursor.execute(
@@ -76,4 +74,3 @@ def create_tables() -> None:
     """)
 
     connection.commit()
-    connection.close()

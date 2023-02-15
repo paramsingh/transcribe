@@ -40,3 +40,19 @@ http://localhost:6550/api/v1/transcription/b59803b8-ef45-47fc-9c5a-8343df208179/
 cd frontend
 npm run dev
 ```
+
+# Run tests
+
+First, install `pytest`.
+
+```
+pip install pytest
+```
+
+Then, just run:
+
+```
+pytest transcribe
+```
+
+**Very important:** Tests are not necessary for every single feature. Prioritize velocity over code coverage.

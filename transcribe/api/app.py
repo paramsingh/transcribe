@@ -40,6 +40,8 @@ def close_db(e):
 
 
 if __name__ == "__main__":
-    db.create_tables()
+    connection = db.init_db()
+    db.create_tables(connection)
+    connection.close()
     os.environ["OPENAI_API_KEY"] = config.OPENAI_API_KEY
     app.run(debug=config.DEVELOPMENT_MODE, port=6550)
