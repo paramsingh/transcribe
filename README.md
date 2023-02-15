@@ -55,4 +55,4 @@ Then, just run:
 pytest transcribe
 ```
 
-**Very important:** Tests are not necessary for every single feature. Prioritize velocity over code coverage.
+**Very important:** Tests are not necessary for every single feature. Prioritize velocity over code coverage. However, we should try to keep all tests passing. `pytest transcribe` should be green.
