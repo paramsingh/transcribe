@@ -5,6 +5,21 @@ from transcribe.db.transcription import get_transcription_by_link
 from typing import Optional
 
 
+def has_embeddings(db: sqlite3.Connection, transcription_id: int) -> bool:
+    """ Checks if a transcription has embeddings. """
+    cursor = db.cursor()
+    cursor.execute(
+        """
+            SELECT id
+              FROM embedding
+             WHERE transcription_id = ?
+        """,
+        (transcription_id,),
+    )
+    row = cursor.fetchone()
+    return row is not None
+
+
 def get_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: int) -> Optional[dict]:
     """ Gets an embedding by transcription. """
     cursor = db.cursor()

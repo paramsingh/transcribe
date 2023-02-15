@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Heading,
-  Input,
-  Spinner,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Button, Divider, Heading, Input, Text } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { getAnswer, getDetailsForToken } from "../../client/api-client";
@@ -21,11 +13,13 @@ export default function TranscriptionAsk() {
   const [answer, setAnswer] = useState<string>("");
   const [waiting, setWaiting] = useState<boolean>(false);
   const [link, setLink] = useState<string>("");
+  const [hasEmbeddings, setHasEmbeddings] = useState<boolean>(true);
 
   useEffect(() => {
     if (!transcriptionToken) return;
     getDetailsForToken(transcriptionToken).then((data) => {
-      setLink(data["link"]);
+      setLink(data.link);
+      setHasEmbeddings(data.has_embeddings);
     });
   });
 

@@ -54,6 +54,7 @@ def get_transcription(token) -> Response:
     result = transcription_db.get_transcription(db, token)
     if not result:
         return jsonify({"error": "not found"}), 404
+    result['has_embeddings'] = embedding_db.has_embeddings(db, result['id'])
     return jsonify(result)
 
 
