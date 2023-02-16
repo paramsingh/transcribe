@@ -1,6 +1,6 @@
 from uuid import uuid4
 from transcribe.db import init_db
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict
 import sqlite3
 
 RECENT_TRANSCRIPTION_COUNT = 5
@@ -45,6 +45,25 @@ def get_transcription_by_link(db, link):
             "link": result[1],
             "result": result[2],
             "id": result[3],
+        }
+    return None
+
+
+def get_transcriptions_by_link(db, links: [str]):
+    cursor = db.cursor()
+    placeholders = ", ".join("?" * len(links))
+    cursor.execute(
+        f"""
+        SELECT token, link, id FROM transcription WHERE link in ({placeholders});
+    """,
+        links,
+    )
+    result = cursor.fetchall()
+
+    if result:
+        return {
+            r[1]: (r[0], r[2])
+            for r in result
         }
     return None
 
@@ -153,15 +172,48 @@ def populate_transcription(db, token: str, result: str) -> None:
     db.commit()
 
 
-def create_transcription(db, link: str, user_id: int, result: str) -> str:
-    cursor = db.cursor()
-
+def get_token_if_existing(db, link: str, user_id: int) -> Union[str, None]:
     existing = get_transcription_by_link(db, link)
     if existing:
         log_transcription_attempt(db, existing["id"], user_id)
         return existing["token"]
+    return None
 
-    token = f"tr-{str(uuid4())}"
+
+def get_ids_if_existing(db, links: [str], user_id: int) -> Dict[str, str]:
+    existing = get_transcriptions_by_link(db, links)
+    if existing:
+        for link, (token, _id) in existing.items():
+            log_transcription_attempt(db, _id, user_id)
+    return existing
+
+
+def create_transcriptions_with_playlist(db, group_items: [str], user_id: int,
+                                        result: Union[str, None], g_token: str, g_link: str):
+    existing = get_ids_if_existing(db, group_items, user_id)
+    c_ids = list([_id for (token, _id) in existing.values()])
+    for link in group_items:
+        if link not in existing:
+            token = f"tr-{uuid4()}"
+            c_id = create_transcription_with_token_returning_id(db, link, user_id, None, token)
+            c_ids.append(c_id)
+    g_id = create_transcription_with_token_returning_id(db, g_link, user_id, result, g_token)
+    create_group_entry(db, g_id, c_ids)
+
+
+def create_group_entry(db, g_token, child_tokens):
+    cursor = db.cursor()
+    cursor.executemany(
+        """
+        INSERT INTO transcription_group (group_id, transcription_id) VALUES (?, ?) 
+        """,
+        [(g_token, token) for token in child_tokens]
+    )
+    db.commit()
+
+
+def create_transcription_with_token(db, link: str, user_id: int, result: Union[None, str], token: str) -> str:
+    cursor = db.cursor()
     cursor.execute(
         """
         INSERT INTO transcription (token, link, user_id, result) VALUES (?, ?, ?, ?);
@@ -171,6 +223,19 @@ def create_transcription(db, link: str, user_id: int, result: str) -> str:
     log_transcription_attempt(db, cursor.lastrowid, user_id)
     db.commit()
     return token
+
+
+def create_transcription_with_token_returning_id(db, link: str, user_id: int, result: Union[None, str], token: str) -> int:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        INSERT INTO transcription (token, link, user_id, result) VALUES (?, ?, ?, ?);
+    """,
+        (token, link, user_id, result),
+    )
+    log_transcription_attempt(db, cursor.lastrowid, user_id)
+    db.commit()
+    return cursor.lastrowid
 
 
 def log_transcription_attempt(db: sqlite3.Connection, transcription_id: int, user_id: Optional[int]) -> None:

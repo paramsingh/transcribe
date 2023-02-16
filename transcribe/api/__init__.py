@@ -1,5 +1,6 @@
 import typing
 import os
+from uuid import uuid4
 
 from flask_cors import cross_origin  # type: ignore
 from flask import Blueprint, jsonify, Response, request, send_file
@@ -7,6 +8,7 @@ from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 from transcribe.processor.transcribe import get_downloaded_file_path
+from transcribe.processor.utils import is_playlist_link, get_playlist_items
 
 api_bp = Blueprint("api_v1", __name__)
 
@@ -37,9 +39,22 @@ def transcribe() -> Response:
     link = request_data.get("link")
     if not link:
         return jsonify({"error": "no link"}), 400
-    db = get_flask_db()
-    token = transcription_db.create_transcription(db, link, user_id, None)
+    token = create_transcription(link, user_id)
     return jsonify({"id": token})
+
+
+def create_transcription(link: str, user_id: int) -> str:
+    db = get_flask_db()
+    _token = transcription_db.get_token_if_existing(db, link, user_id)
+    if _token:
+        return _token
+    if is_playlist_link(link):
+        token = f"gr-{str(uuid4())}"
+        transcription_db.create_transcriptions_with_playlist(db, get_playlist_items(link), user_id, None, token, link)
+    else:
+        token = f"tr-{str(uuid4())}"
+        transcription_db.create_transcription_with_token(db, link, user_id, None, token)
+    return token
 
 
 @api_bp.route("/transcription/<token>/details", methods=["GET"])
