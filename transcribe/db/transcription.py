@@ -261,3 +261,16 @@ def get_recent_transcriptions(db: sqlite3.Connection, limit: int = RECENT_TRANSC
         "improvement_failed": row[4],
         "created": str(row[5]),
     } for row in cursor.fetchall()]
+
+
+def count_unfinished_transcriptions(db: sqlite3.Connection) -> int:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+          FROM transcription
+         WHERE result is NULL
+           AND transcribe_failed = 0
+    """
+    )
+    return cursor.fetchone()[0]

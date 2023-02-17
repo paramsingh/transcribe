@@ -6,7 +6,8 @@ import json
 from transcribe.db.transcription import (
     get_one_unfinished_transcription,
     populate_transcription,
-    mark_transcription_failed
+    mark_transcription_failed,
+    count_unfinished_transcriptions,
 )
 from transcribe.db import init_db
 import schedule
@@ -47,6 +48,8 @@ class WhisperProcessor:
         )
 
     def process(self) -> None:
+        count = count_unfinished_transcriptions(self.db)
+        print("Unfinished transcriptions: " + str(count))
         unfinished = get_one_unfinished_transcription(self.db)
         if not unfinished:
             print("Nothing to do in this cycle!")
@@ -87,13 +90,7 @@ class WhisperProcessor:
         ydl_opts = {
             "format": "bestaudio/best",
             "outtmpl": path,
-            "postprocessors": [
-                {
-                    "key": "FFmpegExtractAudio",
-                    "preferredcodec": "opus",
-                    "preferredquality": "192",
-                }
-            ],
+            "postprocessors": [],
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([yt_link])
@@ -111,7 +108,7 @@ class WhisperProcessor:
 
 if __name__ == "__main__":
     processor = WhisperProcessor()
-    schedule.every(1).minutes.do(processor.process)
+    schedule.every(10).seconds.do(processor.process)
     while True:
         schedule.run_pending()
         time.sleep(1)
