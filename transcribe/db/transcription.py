@@ -73,12 +73,18 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT token, link, result, improvement, summary, id
-          FROM transcription
-         WHERE (improvement is NULL OR summary IS NULL)
-           AND result is NOT NULL
-           AND improvement_failed = 0
-      ORDER BY created ASC
+        SELECT t.token, t.link, t.result, t.improvement, t.summary, t.id, t.created
+          FROM transcription t
+     LEFT JOIN embedding e
+            ON t.id = e.transcription_id
+         WHERE (t.improvement is NULL OR t.summary IS NULL OR e.id IS NULL)
+           AND t.result is NOT NULL
+           AND t.improvement_failed = 0
+           -- HUGE HACK: not improving old transcriptions
+           -- TODO (param): eventually create embeddings for these
+           -- and remove this hack
+           AND CAST(strftime('%s', date(t.created)) as integer) > CAST(strftime('%s', '2023-02-16') as integer)
+      ORDER BY t.created ASC
          LIMIT 1;
     """
     )
@@ -92,6 +98,7 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
             "improvement": result[3],
             "summary": result[4],
             "id": result[5],
+            "created": result[6],
         }
     return None
 
