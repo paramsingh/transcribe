@@ -76,7 +76,8 @@ class Improver:
             embedding = db_embedding.get_embeddings_for_transcription(
                 self.db, unimproved["id"])
             if not embedding:
-                embedding = self.create_embeddings(unimproved["result"])
+                embedding = self.create_embeddings(
+                    unimproved["result"], unimproved["link"])
                 db_embedding.save_embeddings_for_transcription(
                     self.db, unimproved["id"], embedding)
             print("Done creating index!")
