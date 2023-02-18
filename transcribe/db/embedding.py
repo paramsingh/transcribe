@@ -20,7 +20,7 @@ def has_embeddings(db: sqlite3.Connection, transcription_id: int) -> bool:
     return row is not None
 
 
-def get_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: int) -> Optional[dict]:
+def get_embeddings_for_transcription(db: sqlite3.Connection, transcription_id: int) -> Optional[str]:
     """ Gets an embedding by transcription. """
     cursor = db.cursor()
     cursor.execute(
