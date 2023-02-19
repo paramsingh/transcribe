@@ -96,7 +96,8 @@ class WhisperProcessor:
 
     def transcribe(self, token: str) -> str:
         print("transcribing for token " + token)
-        output = self.version.predict(audio=get_api_endpoint(token))
+        output = self.version.predict(
+            audio=get_api_endpoint(token), model='large')
         print("done with transcription for " + token)
         return json.dumps(output)
 
