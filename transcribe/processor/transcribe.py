@@ -22,7 +22,6 @@ if not DEVELOPMENT_MODE:
     )
 
 
-MAX_FILE_SIZE_TO_SEND_DIRECTLY = 30 * 1024 * 1024  # bytes
 API_BASE_URL = "https://transcribe.param.codes/api/v1"
 
 
@@ -97,11 +96,7 @@ class WhisperProcessor:
 
     def transcribe(self, token: str) -> str:
         print("transcribing for token " + token)
-        path = get_downloaded_file_path(token)
-        if get_file_size(path) <= MAX_FILE_SIZE_TO_SEND_DIRECTLY:
-            output = self.version.predict(audio=Path(f"/tmp/{token}.opus"))
-        else:
-            output = self.version.predict(audio=get_api_endpoint(token))
+        output = self.version.predict(audio=get_api_endpoint(token))
         print("done with transcription for " + token)
         return json.dumps(output)
 
