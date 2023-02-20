@@ -17,6 +17,7 @@ import time
 import sentry_sdk
 from transcribe.processor import sentry_report
 from gpt_index import Document, GPTSimpleVectorIndex
+from yaspin import yaspin
 
 if not DEVELOPMENT_MODE:
     sentry_sdk.init(
@@ -48,7 +49,8 @@ class Improver:
         if not unimproved["improvement"]:
             print("Improving...")
             try:
-                improved_text = self.improve_text(result["transcription"])
+                with yaspin(text="Summarizing...", timer=True):
+                    improved_text = self.improve_text(result["transcription"])
                 add_improvement(self.db, improved_text, unimproved["token"])
                 print("Done improving!")
             except Exception as e:
@@ -62,7 +64,8 @@ class Improver:
         if not unimproved["summary"]:
             print("Summarizing...")
             try:
-                summary = self.summarize_text(result["transcription"])
+                with yaspin(text="Summarizing...", timer=True):
+                    summary = self.summarize_text(result["transcription"])
                 add_summary(self.db, summary, unimproved["token"])
                 print("Done summarizing!")
             except Exception as e:
@@ -76,8 +79,9 @@ class Improver:
             embedding = db_embedding.get_embeddings_for_transcription(
                 self.db, unimproved["id"])
             if not embedding:
-                embedding = self.create_embeddings(
-                    unimproved["result"], unimproved["link"])
+                with yaspin(text="Summarizing...", timer=True):
+                    embedding = self.create_embeddings(
+                        unimproved["result"], unimproved["link"])
                 db_embedding.save_embeddings_for_transcription(
                     self.db, unimproved["id"], embedding)
             print("Done creating index!")
