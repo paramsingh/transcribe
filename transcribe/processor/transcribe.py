@@ -12,7 +12,7 @@ from transcribe.db.transcription import (
 from transcribe.db import init_db
 import schedule
 import time
-import multiprocessing
+import concurrent
 from yaspin import yaspin
 
 import sentry_sdk
@@ -39,13 +39,18 @@ def get_api_endpoint(token: str) -> str:
     return f"{API_BASE_URL}/internal/transcription/{token}/file"
 
 
-def transcribe(token: str, version, result_queue: multiprocessing.Queue) -> str:
+def transcribe(token: str, version) -> str:
     print("transcribing for token " + token)
     with yaspin(text="Transcribing...", timer=True):
-        output = version.predict(
-            audio=get_api_endpoint(token), model='large')
+        if DEVELOPMENT_MODE:
+            output = "test output please ignore"
+            # output = version.predict(
+            #     audio=get_downloaded_file_path(token))
+        else:
+            output = version.predict(
+                audio=get_api_endpoint(token), model='large')
     print("done with transcription for " + token)
-    return result_queue.put(json.dumps(output))
+    return json.dumps(output)
 
 
 MAX_TIME_FOR_TRANSCRIPTION = 15 * 60  # 15 minutes
@@ -132,27 +137,21 @@ class WhisperProcessor:
             ydl.download([yt_link])
 
     def call_transcribe_with_timeout(self, token, timeout_sec):
-        # Create a multiprocessing queue to hold the result
-        result_queue = multiprocessing.Queue()
+        # Create a process pool with one worker process
+        with concurrent.futures.ProcessPoolExecutor(max_workers=1) as pool:
+            # Submit the transcribe function to the process pool
+            future = pool.submit(transcribe, token, self.version)
 
-        # Create a multiprocessing process for the transcribe function
-        transcribe_process = multiprocessing.Process(
-            target=transcribe, args=(token, self.version, result_queue))
+            # Wait for the future to complete or for the timeout to expire
+            try:
+                result = future.result(timeout=timeout_sec)
+            except concurrent.futures.TimeoutError:
+                # If the future did not complete before the timeout, cancel it and raise a TimeoutError
+                future.cancel()
+                raise TimeoutError(
+                    f"Transcription for token {token} timed out after {timeout_sec} seconds")
 
-        # Start the process
-        transcribe_process.start()
-
-        # Wait for the process to finish or for the timeout to expire
-        transcribe_process.join(timeout=timeout_sec)
-
-        if transcribe_process.is_alive():
-            # If the process is still running, terminate it and raise a TimeoutError
-            transcribe_process.terminate()
-            raise TimeoutError(
-                f"Transcription for token {token} timed out after {timeout_sec} seconds")
-
-        # If the process finished before the timeout, get the result from the queue and return it
-        result = result_queue.get_nowait()
+        # If the future completed before the timeout, return the result
         return result
 
 
