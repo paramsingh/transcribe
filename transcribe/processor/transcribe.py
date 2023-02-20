@@ -152,7 +152,7 @@ class WhisperProcessor:
                 f"Transcription for token {token} timed out after {timeout_sec} seconds")
 
         # If the process finished before the timeout, get the result from the queue and return it
-        result = result_queue.get()
+        result = result_queue.get_nowait()
         return result
 
 
