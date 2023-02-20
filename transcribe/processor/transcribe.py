@@ -48,7 +48,7 @@ def transcribe(token: str, version) -> str:
     return json.dumps(output)
 
 
-MAX_TIME_FOR_TRANSCRIPTION = 10 * 60  # 10 minutes
+MAX_TIME_FOR_TRANSCRIPTION = 15 * 60  # 15 minutes
 
 
 class Timeout(Exception):
