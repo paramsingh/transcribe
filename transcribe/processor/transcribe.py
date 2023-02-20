@@ -41,7 +41,7 @@ def get_api_endpoint(token: str) -> str:
 
 def transcribe(token: str, version) -> str:
     print("transcribing for token " + token)
-    with yaspin(text="Transcribing..."):
+    with yaspin(text="Transcribing...", timer=True):
         output = version.predict(
             audio=get_api_endpoint(token), model='large')
     print("done with transcription for " + token)
