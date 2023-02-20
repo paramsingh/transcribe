@@ -6,7 +6,7 @@ import json
 from transcribe.db.transcription import (
     get_one_unfinished_transcription,
     populate_transcription,
-    mark_transcription_failed,
+    set_transcription_failed,
     count_unfinished_transcriptions,
 )
 from transcribe.db import init_db
@@ -85,7 +85,7 @@ class WhisperProcessor:
         except Exception as e:
             print("Couldn't download video: ", e)
             sentry_report(e)
-            mark_transcription_failed(self.db, token)
+            set_transcription_failed(self.db, token, True)
             return
 
         print("downloaded link for token: " + token)
@@ -102,11 +102,11 @@ class WhisperProcessor:
             except Exception as e:
                 print("Transcription failed with error: ", e)
                 sentry_report(e)
-                mark_transcription_failed(self.db, token)
+                set_transcription_failed(self.db, token, True)
                 return
         else:
             print("Transcription kept timing out: failing")
-            mark_transcription_failed(self.db, token)
+            set_transcription_failed(self.db, token, True)
             return
 
         try:
@@ -118,7 +118,7 @@ class WhisperProcessor:
         except Exception as e:
             print("Transcription failed with error: ", e)
             sentry_report(e)
-            mark_transcription_failed(self.db, token)
+            set_transcription_failed(self.db, token, True)
             return
 
     def delete_downloaded_file(self, token: str):

@@ -35,7 +35,9 @@ def get_transcription_by_link(db, link):
 
     cursor.execute(
         """
-        SELECT token, link, result, id FROM transcription WHERE link = ?;
+        SELECT token, link, result, id, transcribe_failed
+          FROM transcription
+         WHERE link = ?;
     """,
         (link,),
     )
@@ -47,6 +49,7 @@ def get_transcription_by_link(db, link):
             "link": result[1],
             "result": result[2],
             "id": result[3],
+            "transcribe_failed": bool(result[4]),
         }
     return None
 
@@ -127,13 +130,13 @@ def mark_improvement_failed(db, token: str) -> None:
     db.commit()
 
 
-def mark_transcription_failed(db, token: str) -> None:
+def set_transcription_failed(db, token: str, value: bool) -> None:
     cursor = db.cursor()
     cursor.execute(
         """
-        UPDATE transcription SET transcribe_failed = 1 WHERE token = ?;
+        UPDATE transcription SET transcribe_failed = ? WHERE token = ?;
     """,
-        (token,),
+        (1 if value else 0, token),
     )
     db.commit()
 
@@ -164,11 +167,6 @@ def populate_transcription(db, token: str, result: str) -> None:
 
 def create_transcription(db, link: str, user_id: int, result: str) -> str:
     cursor = db.cursor()
-
-    existing = get_transcription_by_link(db, link)
-    if existing:
-        log_transcription_attempt(db, existing["id"], user_id)
-        return existing["token"]
 
     token = f"tr-{str(uuid4())}"
     cursor.execute(

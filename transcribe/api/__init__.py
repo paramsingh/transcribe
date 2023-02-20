@@ -41,6 +41,13 @@ def transcribe() -> Response:
     if not link:
         return jsonify({"error": "no link"}), 400
     db = get_flask_db()
+    existing = transcription_db.get_transcription_by_link(db, link)
+    if existing:
+        if existing["result"] is None and existing["transcribe_failed"]:
+            transcription_db.set_transcription_failed(
+                db, existing["id"], False)
+        transcription_db.log_transcription_attempt(db, existing["id"], user_id)
+        return existing["token"]
     token = transcription_db.create_transcription(db, link, user_id, None)
     return jsonify({"id": token})
 
