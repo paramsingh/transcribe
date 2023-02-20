@@ -39,13 +39,13 @@ def get_api_endpoint(token: str) -> str:
     return f"{API_BASE_URL}/internal/transcription/{token}/file"
 
 
-def transcribe(token: str, version) -> str:
+def transcribe(token: str, version, result_queue: multiprocessing.Queue) -> str:
     print("transcribing for token " + token)
     with yaspin(text="Transcribing...", timer=True):
         output = version.predict(
             audio=get_api_endpoint(token), model='large')
     print("done with transcription for " + token)
-    return json.dumps(output)
+    return result_queue.put(json.dumps(output))
 
 
 MAX_TIME_FOR_TRANSCRIPTION = 15 * 60  # 15 minutes
@@ -137,7 +137,7 @@ class WhisperProcessor:
 
         # Create a multiprocessing process for the transcribe function
         transcribe_process = multiprocessing.Process(
-            target=transcribe, args=(token, self.version))
+            target=transcribe, args=(token, self.version, result_queue))
 
         # Start the process
         transcribe_process.start()
