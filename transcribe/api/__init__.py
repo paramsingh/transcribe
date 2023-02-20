@@ -47,7 +47,7 @@ def transcribe() -> Response:
             transcription_db.set_transcription_failed(
                 db, existing["id"], False)
         transcription_db.log_transcription_attempt(db, existing["id"], user_id)
-        return existing["token"]
+        return jsonify({"id": existing["token"]})
     token = transcription_db.create_transcription(db, link, user_id, None)
     return jsonify({"id": token})
 
