@@ -12,6 +12,8 @@ from transcribe.db.transcription import (
 from transcribe.db import init_db
 import schedule
 import time
+import multiprocessing
+from yaspin import yaspin
 
 import sentry_sdk
 from transcribe.processor import sentry_report
@@ -35,6 +37,22 @@ def get_file_size(file_path: str) -> int:
 
 def get_api_endpoint(token: str) -> str:
     return f"{API_BASE_URL}/internal/transcription/{token}/file"
+
+
+def transcribe(token: str, version) -> str:
+    print("transcribing for token " + token)
+    with yaspin(text="Transcribing..."):
+        output = version.predict(
+            audio=get_api_endpoint(token), model='large')
+    print("done with transcription for " + token)
+    return json.dumps(output)
+
+
+MAX_TIME_FOR_TRANSCRIPTION = 10 * 60  # 10 minutes
+
+
+class Timeout(Exception):
+    pass
 
 
 class WhisperProcessor:
@@ -66,8 +84,27 @@ class WhisperProcessor:
             return
 
         print("downloaded link for token: " + token)
+        result = None
+        for _ in range(3):
+            try:
+                result = self.call_transcribe_with_timeout(
+                    token, MAX_TIME_FOR_TRANSCRIPTION)
+                break
+            except TimeoutError as e:
+                print("Transcription timed out: retrying...")
+                time.sleep(2)
+                continue
+            except Exception as e:
+                print("Transcription failed with error: ", e)
+                sentry_report(e)
+                mark_transcription_failed(self.db, token)
+                return
+        else:
+            print("Transcription kept timing out: failing")
+            mark_transcription_failed(self.db, token)
+            return
+
         try:
-            result = self.transcribe(token)
             populate_transcription(self.db, token, result)
             self.delete_downloaded_file(token)
             print(
@@ -94,12 +131,29 @@ class WhisperProcessor:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([yt_link])
 
-    def transcribe(self, token: str) -> str:
-        print("transcribing for token " + token)
-        output = self.version.predict(
-            audio=get_api_endpoint(token), model='large')
-        print("done with transcription for " + token)
-        return json.dumps(output)
+    def call_transcribe_with_timeout(self, token, timeout_sec):
+        # Create a multiprocessing queue to hold the result
+        result_queue = multiprocessing.Queue()
+
+        # Create a multiprocessing process for the transcribe function
+        transcribe_process = multiprocessing.Process(
+            target=transcribe, args=(token, self.version))
+
+        # Start the process
+        transcribe_process.start()
+
+        # Wait for the process to finish or for the timeout to expire
+        transcribe_process.join(timeout=timeout_sec)
+
+        if transcribe_process.is_alive():
+            # If the process is still running, terminate it and raise a TimeoutError
+            transcribe_process.terminate()
+            raise TimeoutError(
+                f"Transcription for token {token} timed out after {timeout_sec} seconds")
+
+        # If the process finished before the timeout, get the result from the queue and return it
+        result = result_queue.get()
+        return result
 
 
 if __name__ == "__main__":
