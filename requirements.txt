@@ -7,3 +7,4 @@ openai
 sentry-sdk
 flask-mail
 gpt-index
+yaspin
