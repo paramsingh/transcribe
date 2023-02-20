@@ -23,10 +23,8 @@ def submit_for_transcription(video_id):
 with open('ycombinator_videos.json') as f:
     videos = json.load(f)
 
-NUMBER_OF_VIDEOS_TO_SUBMIT = 100
-OFFSET = 100
 
-for video in videos[OFFSET:OFFSET + NUMBER_OF_VIDEOS_TO_SUBMIT]:
+for video in videos:
     print(video['title'])
     token = submit_for_transcription(video['id'])
     print(f"Submitted! token: {token}")
