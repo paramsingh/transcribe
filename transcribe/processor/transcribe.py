@@ -12,7 +12,7 @@ from transcribe.db.transcription import (
 from transcribe.db import init_db
 import schedule
 import time
-import concurrent
+import multiprocessing
 from yaspin import yaspin
 
 import sentry_sdk
@@ -40,20 +40,28 @@ def get_api_endpoint(token: str) -> str:
 
 
 def transcribe(token: str, version) -> str:
+    connection = init_db()
     print("transcribing for token " + token)
     with yaspin(text="Transcribing...", timer=True):
-        if DEVELOPMENT_MODE:
-            output = "test output please ignore"
-            # output = version.predict(
-            #     audio=get_downloaded_file_path(token))
-        else:
-            output = version.predict(
-                audio=get_api_endpoint(token), model='large')
-    print("done with transcription for " + token)
-    return json.dumps(output)
+        try:
+            if DEVELOPMENT_MODE:
+                output = "test output please ignore"
+                # output = version.predict(
+                #     audio=get_downloaded_file_path(token))
+            else:
+                output = version.predict(
+                    audio=get_api_endpoint(token), model='large')
+        except Exception as e:
+            print("Transcription failed with error: ", e)
+            sentry_report(e)
+            set_transcription_failed(connection, token, True)
+            return
+    print(f"got result for token : {token}!")
+    result = json.dumps(output)
+    populate_transcription(connection, token, result)
 
 
-MAX_TIME_FOR_TRANSCRIPTION = 15 * 60  # 15 minutes
+MAX_TIME_FOR_TRANSCRIPTION = 30 * 60  # 30 minutes
 
 
 class Timeout(Exception):
@@ -90,10 +98,12 @@ class WhisperProcessor:
 
         print("downloaded link for token: " + token)
         result = None
-        for _ in range(3):
+        for _ in range(2):
             try:
-                result = self.call_transcribe_with_timeout(
-                    token, MAX_TIME_FOR_TRANSCRIPTION)
+                self.call_transcribe_with_timeout(
+                    token,
+                    MAX_TIME_FOR_TRANSCRIPTION,
+                )
                 break
             except TimeoutError as e:
                 print("Transcription timed out: retrying...")
@@ -110,7 +120,6 @@ class WhisperProcessor:
             return
 
         try:
-            populate_transcription(self.db, token, result)
             self.delete_downloaded_file(token)
             print(
                 f"Done! Link: https://transcribe.param.codes/result/{token}"
@@ -137,22 +146,18 @@ class WhisperProcessor:
             ydl.download([yt_link])
 
     def call_transcribe_with_timeout(self, token, timeout_sec):
-        # Create a process pool with one worker process
-        with concurrent.futures.ProcessPoolExecutor(max_workers=1) as pool:
-            # Submit the transcribe function to the process pool
-            future = pool.submit(transcribe, token, self.version)
-
-            # Wait for the future to complete or for the timeout to expire
-            try:
-                result = future.result(timeout=timeout_sec)
-            except concurrent.futures.TimeoutError:
-                # If the future did not complete before the timeout, cancel it and raise a TimeoutError
-                future.cancel()
-                raise TimeoutError(
-                    f"Transcription for token {token} timed out after {timeout_sec} seconds")
-
-        # If the future completed before the timeout, return the result
-        return result
+        transcribe_process = multiprocessing.Process(
+            target=transcribe,
+            args=(
+                token,
+                self.version,
+            ),
+        )
+        transcribe_process.start()
+        transcribe_process.join(timeout_sec)
+        if transcribe_process.is_alive():
+            transcribe_process.terminate()
+            raise TimeoutError
 
 
 if __name__ == "__main__":
