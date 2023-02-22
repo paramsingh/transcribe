@@ -17,6 +17,7 @@ import time
 import sentry_sdk
 from transcribe.processor import sentry_report
 from gpt_index import Document, GPTSimpleVectorIndex
+from yaspin import yaspin
 
 if not DEVELOPMENT_MODE:
     sentry_sdk.init(
@@ -48,7 +49,8 @@ class Improver:
         if not unimproved["improvement"]:
             print("Improving...")
             try:
-                improved_text = self.improve_text(result["transcription"])
+                with yaspin(text="Summarizing...", timer=True):
+                    improved_text = self.improve_text(result["transcription"])
                 add_improvement(self.db, improved_text, unimproved["token"])
                 print("Done improving!")
             except Exception as e:
@@ -62,7 +64,8 @@ class Improver:
         if not unimproved["summary"]:
             print("Summarizing...")
             try:
-                summary = self.summarize_text(result["transcription"])
+                with yaspin(text="Summarizing...", timer=True):
+                    summary = self.summarize_text(result["transcription"])
                 add_summary(self.db, summary, unimproved["token"])
                 print("Done summarizing!")
             except Exception as e:
@@ -76,7 +79,9 @@ class Improver:
             embedding = db_embedding.get_embeddings_for_transcription(
                 self.db, unimproved["id"])
             if not embedding:
-                embedding = self.create_embeddings(unimproved["result"])
+                with yaspin(text="Summarizing...", timer=True):
+                    embedding = self.create_embeddings(
+                        unimproved["result"], unimproved["link"])
                 db_embedding.save_embeddings_for_transcription(
                     self.db, unimproved["id"], embedding)
             print("Done creating index!")
@@ -145,9 +150,13 @@ Text:
 Summary:"""
         return self.group_and_make_openai_requests(raw, prompt)
 
-    def create_embeddings(self, raw: str) -> str:
+    def create_embeddings(self, raw: str, link: str) -> str:
         """ Create embeddings for the text using GPT-3 """
-        document = Document(raw)
+        text = f"""
+The following is the transcription of a youtube video (Link: {link}).
+
+{raw}"""
+        document = Document(text)
         index = GPTSimpleVectorIndex([document])
         return index.save_to_string()
 
@@ -156,7 +165,7 @@ if __name__ == "__main__":
     openai.api_key = OPENAI_API_KEY
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
     improver = Improver()
-    schedule.every(1).minutes.do(improver.improve_one_transcription)
+    schedule.every(10).seconds.do(improver.improve_one_transcription)
     while True:
         schedule.run_pending()
         time.sleep(1)

@@ -5,9 +5,12 @@ from uuid import uuid4
 
 from flask_cors import cross_origin  # type: ignore
 from flask import Blueprint, jsonify, Response, request, send_file
+from gpt_index import GPTSimpleVectorIndex
+
 from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
+import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
 from transcribe.processor.utils import is_group_link, get_group_items, is_group_token
 
@@ -40,7 +43,15 @@ def transcribe() -> Response:
     link = request_data.get("link")
     if not link:
         return jsonify({"error": "no link"}), 400
-    token = create_transcription(link, user_id)
+    db = get_flask_db()
+    existing = transcription_db.get_transcription_by_link(db, link)
+    if existing:
+        if existing["result"] is None and existing["transcribe_failed"]:
+            transcription_db.set_transcription_failed(
+                db, existing["id"], False)
+        transcription_db.log_transcription_attempt(db, existing["id"], user_id)
+        return jsonify({"id": existing["token"]})
+    token = transcription_db.create_transcription(db, link, user_id, None)
     return jsonify({"id": token})
 
 
@@ -54,7 +65,7 @@ def create_transcription(link: str, user_id: int) -> str:
         transcription_db.create_transcriptions_with_group(db, get_group_items(link), user_id, None, token, link)
     else:
         token = f"tr-{str(uuid4())}"
-        transcription_db.create_transcription_with_token(db, link, user_id, None, token)
+        transcription_db.create_transcription_with_transcription_token(db, link, user_id, None, token)
     return token
 
 
@@ -70,6 +81,7 @@ def get_transcription(token) -> Response:
         result = transcription_db.get_transcription(db, token)
     if not result:
         return jsonify({"error": "not found"}), 404
+    result['has_embeddings'] = embedding_db.has_embeddings(db, result['id'])
     return jsonify(result)
 
 
@@ -107,3 +119,24 @@ def download_file_endpoint(token: str):
     if not os.path.exists(fn):
         return jsonify({"error": f"file not found: {token}"}), 404
     return send_file(fn, mimetype="audio/ogg")
+
+
+@api_bp.route("/transcription/<token>/ask", methods=["POST"])
+@cross_origin()
+def ask(token: str):
+    if not token:
+        return jsonify({"error": "no token"}), 400
+    request_data = typing.cast(typing.Dict[str, str], request.get_json())
+    question = request_data.get("question")
+    if not question:
+        return jsonify({"error": "no question"}), 400
+
+    db = get_flask_db()
+    transcription = transcription_db.get_transcription(db, token)
+    if transcription is None:
+        return jsonify({"error": "not found"}), 404
+    embeddings = embedding_db.get_embeddings_for_transcription(
+        db, transcription['id'])
+    index = GPTSimpleVectorIndex.load_from_string(embeddings['embedding_json'])
+    answer = index.query(question)
+    return jsonify({"answer": str(answer)})

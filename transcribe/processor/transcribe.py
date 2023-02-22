@@ -6,11 +6,14 @@ import json
 from transcribe.db.transcription import (
     get_one_unfinished_transcription,
     populate_transcription,
-    mark_transcription_failed
+    set_transcription_failed,
+    count_unfinished_transcriptions,
 )
 from transcribe.db import init_db
 import schedule
 import time
+import multiprocessing
+from yaspin import yaspin
 
 import sentry_sdk
 from transcribe.processor import sentry_report
@@ -21,7 +24,6 @@ if not DEVELOPMENT_MODE:
     )
 
 
-MAX_FILE_SIZE_TO_SEND_DIRECTLY = 30 * 1024 * 1024  # bytes
 API_BASE_URL = "https://transcribe.param.codes/api/v1"
 
 
@@ -37,6 +39,35 @@ def get_api_endpoint(token: str) -> str:
     return f"{API_BASE_URL}/internal/transcription/{token}/file"
 
 
+def transcribe(token: str, version) -> str:
+    connection = init_db()
+    print("transcribing for token " + token)
+    with yaspin(text="Transcribing...", timer=True):
+        try:
+            if DEVELOPMENT_MODE:
+                output = "test output please ignore"
+                # output = version.predict(
+                #     audio=get_downloaded_file_path(token))
+            else:
+                output = version.predict(
+                    audio=get_api_endpoint(token), model='large')
+        except Exception as e:
+            print("Transcription failed with error: ", e)
+            sentry_report(e)
+            set_transcription_failed(connection, token, True)
+            return
+    print(f"got result for token : {token}!")
+    result = json.dumps(output)
+    populate_transcription(connection, token, result)
+
+
+MAX_TIME_FOR_TRANSCRIPTION = 30 * 60  # 30 minutes
+
+
+class Timeout(Exception):
+    pass
+
+
 class WhisperProcessor:
     def __init__(self):
         self.db = init_db()
@@ -47,6 +78,8 @@ class WhisperProcessor:
         )
 
     def process(self) -> None:
+        count = count_unfinished_transcriptions(self.db)
+        print("Unfinished transcriptions: " + str(count))
         unfinished = get_one_unfinished_transcription(self.db)
         if not unfinished:
             print("Nothing to do in this cycle!")
@@ -61,13 +94,33 @@ class WhisperProcessor:
         except Exception as e:
             print("Couldn't download video: ", e)
             sentry_report(e)
-            mark_transcription_failed(self.db, token)
+            set_transcription_failed(self.db, token, True)
             return
 
         print("downloaded link for token: " + token)
+        result = None
+        for _ in range(2):
+            try:
+                self.call_transcribe_with_timeout(
+                    token,
+                    MAX_TIME_FOR_TRANSCRIPTION,
+                )
+                break
+            except TimeoutError as e:
+                print("Transcription timed out: retrying...")
+                time.sleep(2)
+                continue
+            except Exception as e:
+                print("Transcription failed with error: ", e)
+                sentry_report(e)
+                set_transcription_failed(self.db, token, True)
+                return
+        else:
+            print("Transcription kept timing out: failing")
+            set_transcription_failed(self.db, token, True)
+            return
+
         try:
-            result = self.transcribe(token)
-            populate_transcription(self.db, token, result)
             self.delete_downloaded_file(token)
             print(
                 f"Done! Link: https://transcribe.param.codes/result/{token}"
@@ -75,7 +128,7 @@ class WhisperProcessor:
         except Exception as e:
             print("Transcription failed with error: ", e)
             sentry_report(e)
-            mark_transcription_failed(self.db, token)
+            set_transcription_failed(self.db, token, True)
             return
 
     def delete_downloaded_file(self, token: str):
@@ -88,31 +141,29 @@ class WhisperProcessor:
         ydl_opts = {
             "format": "bestaudio/best",
             "outtmpl": path,
-            "postprocessors": [
-                {
-                    "key": "FFmpegExtractAudio",
-                    "preferredcodec": "opus",
-                    "preferredquality": "192",
-                }
-            ],
+            "postprocessors": [],
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([yt_link])
 
-    def transcribe(self, token: str) -> str:
-        print("transcribing for token " + token)
-        path = get_downloaded_file_path(token)
-        if get_file_size(path) <= MAX_FILE_SIZE_TO_SEND_DIRECTLY:
-            output = self.version.predict(audio=Path(f"/tmp/{token}.opus"))
-        else:
-            output = self.version.predict(audio=get_api_endpoint(token))
-        print("done with transcription for " + token)
-        return json.dumps(output)
+    def call_transcribe_with_timeout(self, token, timeout_sec):
+        transcribe_process = multiprocessing.Process(
+            target=transcribe,
+            args=(
+                token,
+                self.version,
+            ),
+        )
+        transcribe_process.start()
+        transcribe_process.join(timeout_sec)
+        if transcribe_process.is_alive():
+            transcribe_process.terminate()
+            raise TimeoutError
 
 
 if __name__ == "__main__":
     processor = WhisperProcessor()
-    schedule.every(1).minutes.do(processor.process)
+    schedule.every(10).seconds.do(processor.process)
     while True:
         schedule.run_pending()
         time.sleep(1)

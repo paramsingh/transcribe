@@ -26,6 +26,7 @@ def get_transcription_group(db, group_token: str) -> Union[dict, None]:
         )
         children = cursor.fetchall()
         return {
+            "id": parent[0],
             "group": {
                 "token": parent[1],
                 "link": parent[2],
@@ -46,7 +47,8 @@ def get_transcription(db, token: str) -> Union[dict, None]:
 
     cursor.execute(
         """
-        SELECT token, link, result, improvement, summary FROM transcription WHERE token = ?;
+        SELECT token, link, result, improvement, summary, id
+          FROM transcription WHERE token = ?;
     """,
         (token,),
     )
@@ -59,6 +61,7 @@ def get_transcription(db, token: str) -> Union[dict, None]:
             "result": result[2],
             "improvement": result[3],
             "summary": result[4],
+            "id": result[5],
         }
     return None
 
@@ -68,7 +71,9 @@ def get_transcription_by_link(db, link):
 
     cursor.execute(
         """
-        SELECT token, link, result, id FROM transcription WHERE link = ?;
+        SELECT token, link, result, id, transcribe_failed
+          FROM transcription
+         WHERE link = ?;
     """,
         (link,),
     )
@@ -80,6 +85,7 @@ def get_transcription_by_link(db, link):
             "link": result[1],
             "result": result[2],
             "id": result[3],
+            "transcribe_failed": bool(result[4]),
         }
     return None
 
@@ -125,12 +131,18 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
     cursor = db.cursor()
     cursor.execute(
         """
-        SELECT token, link, result, improvement, summary, id
-          FROM transcription
-         WHERE (improvement is NULL OR summary IS NULL)
-           AND result is NOT NULL
-           AND improvement_failed = 0
-      ORDER BY created ASC
+        SELECT t.token, t.link, t.result, t.improvement, t.summary, t.id, t.created
+          FROM transcription t
+     LEFT JOIN embedding e
+            ON t.id = e.transcription_id
+         WHERE (t.improvement is NULL OR t.summary IS NULL OR e.id IS NULL)
+           AND t.result is NOT NULL
+           AND t.improvement_failed = 0
+           -- HUGE HACK: not improving old transcriptions
+           -- TODO (param): eventually create embeddings for these
+           -- and remove this hack
+           AND CAST(strftime('%s', date(t.created)) as integer) > CAST(strftime('%s', '2023-02-16') as integer)
+      ORDER BY t.created ASC
          LIMIT 1;
     """
     )
@@ -144,6 +156,7 @@ def get_one_unimproved_transcription(db) -> Union[dict, None]:
             "improvement": result[3],
             "summary": result[4],
             "id": result[5],
+            "created": result[6],
         }
     return None
 
@@ -172,13 +185,13 @@ def mark_improvement_failed(db, token: str) -> None:
     db.commit()
 
 
-def mark_transcription_failed(db, token: str) -> None:
+def set_transcription_failed(db, token: str, value: bool) -> None:
     cursor = db.cursor()
     cursor.execute(
         """
-        UPDATE transcription SET transcribe_failed = 1 WHERE token = ?;
+        UPDATE transcription SET transcribe_failed = ? WHERE token = ?;
     """,
-        (token,),
+        (1 if value else 0, token),
     )
     db.commit()
 
@@ -247,8 +260,10 @@ def create_group_entry(db, g_token, child_tokens):
     db.commit()
 
 
-def create_transcription_with_token(db, link: str, user_id: int, result: Union[None, str], token: str) -> str:
+def create_transcription_with_transcription_token(db, link: str, user_id: int, result: str) -> str:
     cursor = db.cursor()
+
+    token = f"tr-{str(uuid4())}"
     cursor.execute(
         """
         INSERT INTO transcription (token, link, user_id, result) VALUES (?, ?, ?, ?);
@@ -359,3 +374,16 @@ def get_recent_transcriptions(db: sqlite3.Connection, limit: int = RECENT_TRANSC
         "improvement_failed": row[4],
         "created": str(row[5]),
     } for row in cursor.fetchall()]
+
+
+def count_unfinished_transcriptions(db: sqlite3.Connection) -> int:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+          FROM transcription
+         WHERE result is NULL
+           AND transcribe_failed = 0
+    """
+    )
+    return cursor.fetchone()[0]
