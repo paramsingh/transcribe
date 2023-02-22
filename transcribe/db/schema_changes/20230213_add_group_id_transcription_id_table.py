@@ -8,7 +8,7 @@ def main():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transcription_group (
             group_id            INTEGER NOT NULL,
-            transcription_id    INTEGER NOT NULL,
+            transcription_id    INTEGER NOT NULL
         );
     """)
     # Create foreign key constraints when we move to PostgreSQL for easy cleanup

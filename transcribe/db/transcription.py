@@ -6,6 +6,41 @@ import sqlite3
 RECENT_TRANSCRIPTION_COUNT = 5
 
 
+def get_transcription_group(db, group_token: str) -> Union[dict, None]:
+    cursor = db.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, token, link FROM transcription WHERE token = ?;
+    """,
+        (group_token,),
+    )
+    parent = cursor.fetchone()
+    if parent:
+        cursor.execute(
+            """
+            SELECT token, link, result, improvement, summary FROM transcription WHERE id IN (
+               SELECT transcription_id FROM transcription_group WHERE group_id = ?)
+        """,
+            (parent[0],)
+        )
+        children = cursor.fetchall()
+        return {
+            "group": {
+                "token": parent[1],
+                "link": parent[2],
+                "members": [{
+                    "token": row[0],
+                    "link": row[1],
+                    "result": row[2],
+                    "improvement": row[3],
+                    "summary": row[4],
+                } for row in children]
+            }
+        }
+    return None
+
+
 def get_transcription(db, token: str) -> Union[dict, None]:
     cursor = db.cursor()
 
@@ -49,7 +84,7 @@ def get_transcription_by_link(db, link):
     return None
 
 
-def get_transcriptions_by_link(db, links: [str]):
+def get_transcriptions_by_link(db, links: List[str]):
     cursor = db.cursor()
     placeholders = ", ".join("?" * len(links))
     cursor.execute(
@@ -65,7 +100,7 @@ def get_transcriptions_by_link(db, links: [str]):
             r[1]: (r[0], r[2])
             for r in result
         }
-    return None
+    return {}
 
 
 def get_one_unfinished_transcription(db) -> Union[dict, None]:
@@ -180,7 +215,7 @@ def get_token_if_existing(db, link: str, user_id: int) -> Union[str, None]:
     return None
 
 
-def get_ids_if_existing(db, links: [str], user_id: int) -> Dict[str, str]:
+def get_ids_if_existing(db, links: List[str], user_id: int) -> Dict[str, str]:
     existing = get_transcriptions_by_link(db, links)
     if existing:
         for link, (token, _id) in existing.items():
@@ -188,8 +223,8 @@ def get_ids_if_existing(db, links: [str], user_id: int) -> Dict[str, str]:
     return existing
 
 
-def create_transcriptions_with_playlist(db, group_items: [str], user_id: int,
-                                        result: Union[str, None], g_token: str, g_link: str):
+def create_transcriptions_with_group(db, group_items: List[str], user_id: int,
+                                     result: Union[str, None], g_token: str, g_link: str):
     existing = get_ids_if_existing(db, group_items, user_id)
     c_ids = list([_id for (token, _id) in existing.values()])
     for link in group_items:
@@ -205,7 +240,7 @@ def create_group_entry(db, g_token, child_tokens):
     cursor = db.cursor()
     cursor.executemany(
         """
-        INSERT INTO transcription_group (group_id, transcription_id) VALUES (?, ?) 
+        INSERT INTO transcription_group (group_id, transcription_id) VALUES (?, ?)
         """,
         [(g_token, token) for token in child_tokens]
     )

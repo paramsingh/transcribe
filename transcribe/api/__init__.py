@@ -1,4 +1,5 @@
 import typing
+from typing import Union
 import os
 from uuid import uuid4
 
@@ -8,7 +9,7 @@ from transcribe.db.db_utils import get_flask_db
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 from transcribe.processor.transcribe import get_downloaded_file_path
-from transcribe.processor.utils import is_playlist_link, get_playlist_items
+from transcribe.processor.utils import is_group_link, get_group_items, is_group_token
 
 api_bp = Blueprint("api_v1", __name__)
 
@@ -48,9 +49,9 @@ def create_transcription(link: str, user_id: int) -> str:
     _token = transcription_db.get_token_if_existing(db, link, user_id)
     if _token:
         return _token
-    if is_playlist_link(link):
+    if is_group_link(link):
         token = f"gr-{str(uuid4())}"
-        transcription_db.create_transcriptions_with_playlist(db, get_playlist_items(link), user_id, None, token, link)
+        transcription_db.create_transcriptions_with_group(db, get_group_items(link), user_id, None, token, link)
     else:
         token = f"tr-{str(uuid4())}"
         transcription_db.create_transcription_with_token(db, link, user_id, None, token)
@@ -63,7 +64,10 @@ def get_transcription(token) -> Response:
     if not token:
         return jsonify({"error": "no token"}), 400
     db = get_flask_db()
-    result = transcription_db.get_transcription(db, token)
+    if is_group_token(token):
+        result = transcription_db.get_transcription_group(db, token)
+    else:
+        result = transcription_db.get_transcription(db, token)
     if not result:
         return jsonify({"error": "not found"}), 404
     return jsonify(result)

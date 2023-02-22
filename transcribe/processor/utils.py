@@ -4,7 +4,7 @@ from urllib.parse import ParseResult
 import yt_dlp
 
 
-def is_playlist_link(link: str):
+def is_group_link(link: str):
     parsed_url = parse.urlparse(link, scheme='https')
     return _is_playlist_path(parsed_url) or _is_playlist_in_watch_query(parsed_url)
 
@@ -20,7 +20,7 @@ def _is_playlist_in_watch_query(link: ParseResult):
     return link.path == "/watch" and 'list' in query.keys()
 
 
-def get_playlist_items(playlist_link: str):
+def get_group_items(link: str):
     ydl_opts = {
         "quiet": True,
         "no_warnings": True,
@@ -29,8 +29,12 @@ def get_playlist_items(playlist_link: str):
         "forcejson": True
     }
     result = yt_dlp.YoutubeDL(ydl_opts).extract_info(
-        playlist_link,
+        link,
         download=False
     )
-    return [entry["url"] for entry in result["entries"]]
+    return list(set([entry["url"] for entry in result["entries"]]))
+
+
+def is_group_token(token: str):
+    return token.startswith('gr-')
 
