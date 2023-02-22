@@ -1,5 +1,4 @@
 from uuid import uuid4
-from transcribe.db import init_db
 from typing import Union, Optional, List, Dict
 import sqlite3
 
@@ -19,8 +18,16 @@ def get_transcription_group(db, group_token: str) -> Union[dict, None]:
     if parent:
         cursor.execute(
             """
-            SELECT token, link, result, improvement, summary FROM transcription WHERE id IN (
-               SELECT transcription_id FROM transcription_group WHERE group_id = ?)
+            SELECT token,
+                   link, 
+                   CASE WHEN summary IS NULL then 0 else 1 END,
+                   transcribe_failed,
+                   improvement_failed,
+                   created
+              FROM transcription WHERE id IN (
+                SELECT transcription_id FROM transcription_group WHERE group_id = ?
+              )
+              ORDER BY created DESC
         """,
             (parent[0],)
         )
@@ -30,13 +37,15 @@ def get_transcription_group(db, group_token: str) -> Union[dict, None]:
             "group": {
                 "token": parent[1],
                 "link": parent[2],
-                "members": [{
-                    "token": row[0],
-                    "link": row[1],
-                    "result": row[2],
-                    "improvement": row[3],
-                    "summary": row[4],
-                } for row in children]
+                "members": {
+                    "transcriptions": [{
+                        "token": row[0],
+                        "link": row[1],
+                        "summary_exists": bool(row[2]),
+                        "transcribe_failed": row[3],
+                        "improvement_failed": row[4],
+                        "created": str(row[5]),
+                    } for row in children]}
             }
         }
     return None
@@ -236,8 +245,7 @@ def get_ids_if_existing(db, links: List[str], user_id: int) -> Dict[str, str]:
     return existing
 
 
-def create_transcriptions_with_group(db, group_items: List[str], user_id: int,
-                                     result: Union[str, None], g_token: str, g_link: str):
+def create_transcriptions_with_group(db, group_items: List[str], user_id: int, g_token: str, g_link: str):
     existing = get_ids_if_existing(db, group_items, user_id)
     c_ids = list([_id for (token, _id) in existing.values()])
     for link in group_items:
@@ -245,7 +253,7 @@ def create_transcriptions_with_group(db, group_items: List[str], user_id: int,
             token = f"tr-{uuid4()}"
             c_id = create_transcription_with_token_returning_id(db, link, user_id, None, token)
             c_ids.append(c_id)
-    g_id = create_transcription_with_token_returning_id(db, g_link, user_id, result, g_token)
+    g_id = create_transcription_with_token_returning_id(db, g_link, user_id, "GROUP_TRANSCRIPTION", g_token)
     create_group_entry(db, g_id, c_ids)
 
 
@@ -275,7 +283,8 @@ def create_transcription_with_transcription_token(db, link: str, user_id: int, r
     return token
 
 
-def create_transcription_with_token_returning_id(db, link: str, user_id: int, result: Union[None, str], token: str) -> int:
+def create_transcription_with_token_returning_id(db, link: str, user_id: int, result: Union[None, str],
+                                                 token: str) -> int:
     cursor = db.cursor()
     cursor.execute(
         """

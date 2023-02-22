@@ -48,6 +48,21 @@ export const getRecentTranscriptions = async () => {
   return response.json();
 };
 
+export const getGroupTranscriptions = async (refId: string) => {
+  const headers: { "Content-Type": string; Authorization?: string } = {
+    "Content-Type": "application/json",
+  };
+  const sessionToken = getSessionToken();
+  if (sessionToken) {
+    headers["Authorization"] = `Bearer ${sessionToken}`;
+  }
+  const response = await fetch(`${BASE_URL}/transcription/${refId}/details`, {
+    method: "GET",
+    headers,
+  });
+  return response.json();
+};
+
 export const getAnswer = async (token: string, question: string) => {
   const response = await fetch(`${BASE_URL}/transcription/${token}/ask`, {
     method: "POST",
