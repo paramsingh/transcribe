@@ -252,6 +252,7 @@ def get_recent_transcriptions(db: sqlite3.Connection, limit: int = RECENT_TRANSC
                improvement_failed,
                created
           FROM transcription
+         WHERE transcribe_failed = 0
       ORDER BY created DESC
          LIMIT ?
           """,
