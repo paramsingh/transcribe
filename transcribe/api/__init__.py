@@ -51,12 +51,11 @@ def transcribe() -> Response:
                 db, existing["id"], False)
         transcription_db.log_transcription_attempt(db, existing["id"], user_id)
         return jsonify({"id": existing["token"]})
-    token = transcription_db.create_transcription(db, link, user_id, None)
+    token = create_transcription(db, link, user_id)
     return jsonify({"id": token})
 
 
-def create_transcription(link: str, user_id: int) -> str:
-    db = get_flask_db()
+def create_transcription(db, link: str, user_id: int) -> str:
     _token = transcription_db.get_token_if_existing(db, link, user_id)
     if _token:
         return _token
@@ -65,7 +64,7 @@ def create_transcription(link: str, user_id: int) -> str:
         transcription_db.create_transcriptions_with_group(db, get_group_items(link), user_id, token, link)
     else:
         token = f"tr-{str(uuid4())}"
-        transcription_db.create_transcription_with_transcription_token(db, link, user_id, None, token)
+        transcription_db.create_transcription_with_transcription_token(db, link, user_id, token)
     return token
 
 
