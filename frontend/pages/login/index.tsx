@@ -26,7 +26,10 @@ const Login = () => {
   };
   return (
     <>
-      <TranscriberHead title="Transcriber | Login" />
+      <TranscriberHead
+        title="Transcriber | Login"
+        description="Sign in to transcribe.param.codes"
+      />
       <main>
         <div>
           <LogoAndTitle />

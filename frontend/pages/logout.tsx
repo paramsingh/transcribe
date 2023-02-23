@@ -28,7 +28,10 @@ export default function Logout() {
   }, [loggedOut]);
   return (
     <>
-      <TranscriberHead title={`Transcriber | Logout`} />
+      <TranscriberHead
+        title={`Transcriber | Logout`}
+        description="Sign out from transcribe.param.codes"
+      />
       <main>
         <LogoAndTitle />
         {loggedOut ? (

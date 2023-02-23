@@ -74,7 +74,10 @@ export default function TranscriptionResult() {
 
   return (
     <>
-      <TranscriberHead title={`Transcribe ${link && `| ${link}`}`} />
+      <TranscriberHead
+        title={`Transcribe ${link && `| ${link}`}`}
+        description={`A transcription and summary of the youtube video with link: ${link}`}
+      />
       <main>
         <LogoAndTitle />
         <section>

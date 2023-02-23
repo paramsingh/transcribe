@@ -31,7 +31,10 @@ export default function RedeemToken() {
 
   return (
     <>
-      <TranscriberHead title={`Redeem token`} />
+      <TranscriberHead
+        title={`Redeem token`}
+        description="redeem login token for transcribe.param.codes"
+      />
       <main>
         <LogoAndTitle />
         <div>

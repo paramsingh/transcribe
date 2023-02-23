@@ -75,7 +75,10 @@ export default function Transcription() {
 
   return (
     <>
-      <TranscriberHead title={"Transcriber"} />
+      <TranscriberHead
+        title={"Transcriber"}
+        description={"Transcribe Youtube videos with the help of AI."}
+      />
       <main>
         <div>
           <LogoAndTitle />
