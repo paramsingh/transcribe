@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /my-transcriptions
+Disallow: /login
+Disallow: /logout
+Disallow: /login/
+
+Sitemap: https://transcribe.param.codes/sitemap.txt
