@@ -90,3 +90,21 @@ pytest transcribe
 ```
 
 **Very important:** Tests are not necessary for every single feature. Prioritize velocity over code coverage. However, we should try to keep all tests passing. `pytest transcribe` should be green.
+
+# Helpful stuff
+
+Query to figure out how many transcriptions remain to be improved.
+
+```
+SELECT count(*)
+          FROM transcription t
+     LEFT JOIN embedding e
+            ON t.id = e.transcription_id
+         WHERE (t.improvement is NULL OR t.summary IS NULL OR e.id IS NULL)
+           AND t.result is NOT NULL
+           AND t.improvement_failed = 0
+           -- HUGE HACK: not improving old transcriptions
+           -- TODO (param): eventually create embeddings for these
+           -- and remove this hack
+           AND CAST(strftime('%s', date(t.created)) as integer) > CAST(strftime('%s', '2023-02-16') as integer)
+```
