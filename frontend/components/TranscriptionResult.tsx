@@ -100,13 +100,6 @@ export const TranscriptionResult = ({
             </Heading>
           )}
           {/*** TODO: think about hiding this entirely */}
-          {!waiting && transcriptionResult && !improvement && (
-            <Alert status="info" style={{ marginBottom: "20px" }}>
-              <AlertIcon />
-              We&lsquo;re working on improving this transcription. Please check
-              again later.
-            </Alert>
-          )}
           {!waiting && transcriptionResult && improvement && (
             <Alert status="success" style={{ marginBottom: "20px" }}>
               {showData == DataType.IMPROVEMENT ? (
