@@ -16,7 +16,10 @@ import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 import { TranscriberHead } from "../../components/TranscriberHead";
 import { LogoAndTitle } from "../../components/LogoAndTitle";
 import { TranscriptionTable } from "../../components/TranscriptionTable";
-import { getGroupTranscriptions, getRecentTranscriptions } from "../../client/api-client";
+import {
+  getGroupTranscriptions,
+  getRecentTranscriptions,
+} from "../../client/api-client";
 
 enum DataType {
   TRANSCRIPTION = "TRANSCRIPTION",
@@ -26,15 +29,15 @@ enum DataType {
 export default function TranscriptionResult() {
   const router = useRouter();
   const refId = router.query.refId as string;
-  if (router.isReady &&  refId.startsWith('gr-')) {
+  if (router.isReady && refId.startsWith("gr-")) {
     const [transcriptions, setTranscriptions] = useState<any>(null);
     const [groupLink, setGroupLink] = useState<string>("");
 
     useEffect(() => {
       getGroupTranscriptions(refId)
         .then((data) => {
-          setGroupLink(data.link)
-          setTranscriptions(data.members.transcriptions)
+          setGroupLink(data.link);
+          setTranscriptions(data.members.transcriptions);
         })
         .catch((err) => {
           console.error(err);
@@ -50,7 +53,10 @@ export default function TranscriptionResult() {
         <Text fontSize={"xl"}>
           Playlist Link: <a href={groupLink}>{groupLink}</a>
         </Text>
-        <TranscriptionTable transcriptions={transcriptions} showOnlySuccessful />
+        <TranscriptionTable
+          transcriptions={transcriptions}
+          showOnlySuccessful
+        />
       </>
     );
   } else {
@@ -104,7 +110,10 @@ export default function TranscriptionResult() {
 
     return (
       <>
-        <TranscriberHead title={`Transcribe ${link && `| ${link}`}`} />
+        <TranscriberHead
+          title={`Transcribe ${link && `| ${link}`}`}
+          description={`A transcription and summary of the youtube video with link: ${link}`}
+        />
         <main>
           <LogoAndTitle />
           <section>
@@ -131,8 +140,56 @@ export default function TranscriptionResult() {
             {!waiting && transcriptionResult && !improvement && (
               <Alert status="info" style={{ marginBottom: "20px" }}>
                 <AlertIcon />
-                We&lsquo;re working on improving this transcription. Please check
-                again later.
+                We&lsquo;re working on improving this transcription. Please
+                check again later.
+              </Alert>
+            )}
+            {!waiting && transcriptionResult && improvement && (
+              <Alert status="success" style={{ marginBottom: "20px" }}>
+                {showData == DataType.IMPROVEMENT ? (
+                  <Text>
+                    This is a GPT-3 enhanced version of the transcription ✨.
+                    Click{" "}
+                    <Link onClick={() => setShowData(DataType.TRANSCRIPTION)}>
+                      here
+                    </Link>{" "}
+                    to see the original.
+                  </Text>
+                ) : (
+                  <Text>
+                    There is an improved ✨ version of this transcription
+                    available. Click{" "}
+                    <Link onClick={() => setShowData(DataType.IMPROVEMENT)}>
+                      here
+                    </Link>{" "}
+                    to see it.
+                  </Text>
+                )}
+              </Alert>
+            )}
+            {!waiting && link && <YoutubeEmbed link={link} />}
+            {!waiting && summary && (
+              <Transcription text={summary} heading="Summary" />
+            )}
+            {!waiting &&
+              transcriptionResult &&
+              showData == DataType.TRANSCRIPTION && (
+                <Transcription
+                  heading="Transcription"
+                  text={transcriptionResult.transcription}
+                />
+              )}
+            {!waiting && !transcriptionResult && (
+              <Heading as={"h5"} size={"md"}>
+                Transcription does not exist. {":("}
+              </Heading>
+            )}
+            {/*** TODO: think about hiding this entirely */}
+            {!waiting && transcriptionResult && !improvement && (
+              <Alert status="info" style={{ marginBottom: "20px" }}>
+                <AlertIcon />
+                We&lsquo;re working on improving this transcription. Please
+                check again later.
               </Alert>
             )}
             {!waiting && transcriptionResult && improvement && (

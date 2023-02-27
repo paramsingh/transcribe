@@ -33,7 +33,10 @@ export default function TranscriptionAsk() {
 
   return (
     <>
-      <TranscriberHead title={"Ask"} />
+      <TranscriberHead
+        title={"Ask"}
+        description={`Ask questions about the Youtube video: ${link}`}
+      />
       <main>
         <LogoAndTitle />
         {link && (

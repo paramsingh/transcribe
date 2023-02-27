@@ -42,7 +42,10 @@ export default function MyTranscriptions() {
 
   return (
     <>
-      <TranscriberHead title={"Transcriber | Your transcriptions"} />
+      <TranscriberHead
+        title={"Transcriber | Your transcriptions"}
+        description="your transcriptions"
+      />
       <main>
         <LogoAndTitle />
         <Heading as="h1" size="xl" paddingBottom={10}>
