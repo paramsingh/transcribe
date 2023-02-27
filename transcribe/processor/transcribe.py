@@ -87,6 +87,7 @@ class WhisperProcessor:
 
         yt_link = unfinished["link"]
         token = unfinished["token"]
+
         print("Processing link for token: " + token + " with link: " + yt_link)
         try:
             self.download_video(yt_link, token)

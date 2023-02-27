@@ -1,9 +1,54 @@
 from uuid import uuid4
-from transcribe.db import init_db
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict
 import sqlite3
 
 RECENT_TRANSCRIPTION_COUNT = 5
+
+
+def get_transcription_group(db, group_token: str) -> Union[dict, None]:
+    cursor = db.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, token, link FROM transcription WHERE token = ?;
+    """,
+        (group_token,),
+    )
+    parent = cursor.fetchone()
+    if parent:
+        cursor.execute(
+            """
+            SELECT token,
+                   link, 
+                   CASE WHEN summary IS NULL then 0 else 1 END,
+                   transcribe_failed,
+                   improvement_failed,
+                   created
+              FROM transcription WHERE id IN (
+                SELECT transcription_id FROM transcription_group WHERE group_id = ?
+              )
+              ORDER BY created DESC
+        """,
+            (parent[0],)
+        )
+        children = cursor.fetchall()
+        return {
+            "id": parent[0],
+            "group": {
+                "token": parent[1],
+                "link": parent[2],
+                "members": {
+                    "transcriptions": [{
+                        "token": row[0],
+                        "link": row[1],
+                        "summary_exists": bool(row[2]),
+                        "transcribe_failed": row[3],
+                        "improvement_failed": row[4],
+                        "created": str(row[5]),
+                    } for row in children]}
+            }
+        }
+    return None
 
 
 def get_transcription(db, token: str) -> Union[dict, None]:
@@ -52,6 +97,25 @@ def get_transcription_by_link(db, link):
             "transcribe_failed": bool(result[4]),
         }
     return None
+
+
+def get_transcriptions_by_link(db, links: List[str]):
+    cursor = db.cursor()
+    placeholders = ", ".join("?" * len(links))
+    cursor.execute(
+        f"""
+        SELECT token, link, id FROM transcription WHERE link in ({placeholders});
+    """,
+        links,
+    )
+    result = cursor.fetchall()
+
+    if result:
+        return {
+            r[1]: (r[0], r[2])
+            for r in result
+        }
+    return {}
 
 
 def get_one_unfinished_transcription(db) -> Union[dict, None]:
@@ -165,7 +229,46 @@ def populate_transcription(db, token: str, result: str) -> None:
     db.commit()
 
 
-def create_transcription(db, link: str, user_id: int, result: str) -> str:
+def get_token_if_existing(db, link: str, user_id: int) -> Union[str, None]:
+    existing = get_transcription_by_link(db, link)
+    if existing:
+        log_transcription_attempt(db, existing["id"], user_id)
+        return existing["token"]
+    return None
+
+
+def get_ids_if_existing(db, links: List[str], user_id: int) -> Dict[str, str]:
+    existing = get_transcriptions_by_link(db, links)
+    if existing:
+        for link, (token, _id) in existing.items():
+            log_transcription_attempt(db, _id, user_id)
+    return existing
+
+
+def create_transcriptions_with_group(db, group_items: List[str], user_id: int, g_token: str, g_link: str):
+    existing = get_ids_if_existing(db, group_items, user_id)
+    c_ids = list([_id for (token, _id) in existing.values()])
+    for link in group_items:
+        if link not in existing:
+            token = f"tr-{uuid4()}"
+            c_id = create_transcription_with_token_returning_id(db, link, user_id, None, token)
+            c_ids.append(c_id)
+    g_id = create_transcription_with_token_returning_id(db, g_link, user_id, "GROUP_TRANSCRIPTION", g_token)
+    create_group_entry(db, g_id, c_ids)
+
+
+def create_group_entry(db, g_token, child_tokens):
+    cursor = db.cursor()
+    cursor.executemany(
+        """
+        INSERT INTO transcription_group (group_id, transcription_id) VALUES (?, ?)
+        """,
+        [(g_token, token) for token in child_tokens]
+    )
+    db.commit()
+
+
+def create_transcription_with_transcription_token(db, link: str, user_id: int, result: str) -> str:
     cursor = db.cursor()
 
     token = f"tr-{str(uuid4())}"
@@ -178,6 +281,20 @@ def create_transcription(db, link: str, user_id: int, result: str) -> str:
     log_transcription_attempt(db, cursor.lastrowid, user_id)
     db.commit()
     return token
+
+
+def create_transcription_with_token_returning_id(db, link: str, user_id: int, result: Union[None, str],
+                                                 token: str) -> int:
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        INSERT INTO transcription (token, link, user_id, result) VALUES (?, ?, ?, ?);
+    """,
+        (token, link, user_id, result),
+    )
+    log_transcription_attempt(db, cursor.lastrowid, user_id)
+    db.commit()
+    return cursor.lastrowid
 
 
 def log_transcription_attempt(db: sqlite3.Connection, transcription_id: int, user_id: Optional[int]) -> None:

@@ -1,5 +1,7 @@
 import typing
+from typing import Union
 import os
+from uuid import uuid4
 
 from flask_cors import cross_origin  # type: ignore
 from flask import Blueprint, jsonify, Response, request, send_file
@@ -10,6 +12,7 @@ import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
+from transcribe.processor.utils import is_group_link, get_group_items, is_group_token
 
 api_bp = Blueprint("api_v1", __name__)
 
@@ -48,8 +51,21 @@ def transcribe() -> Response:
                 db, existing["id"], False)
         transcription_db.log_transcription_attempt(db, existing["id"], user_id)
         return jsonify({"id": existing["token"]})
-    token = transcription_db.create_transcription(db, link, user_id, None)
+    token = create_transcription(db, link, user_id)
     return jsonify({"id": token})
+
+
+def create_transcription(db, link: str, user_id: int) -> str:
+    _token = transcription_db.get_token_if_existing(db, link, user_id)
+    if _token:
+        return _token
+    if is_group_link(link):
+        token = f"gr-{str(uuid4())}"
+        transcription_db.create_transcriptions_with_group(db, get_group_items(link), user_id, token, link)
+    else:
+        token = f"tr-{str(uuid4())}"
+        transcription_db.create_transcription_with_transcription_token(db, link, user_id, token)
+    return token
 
 
 @api_bp.route("/transcription/<token>/details", methods=["GET"])
@@ -58,7 +74,10 @@ def get_transcription(token) -> Response:
     if not token:
         return jsonify({"error": "no token"}), 400
     db = get_flask_db()
-    result = transcription_db.get_transcription(db, token)
+    if is_group_token(token):
+        result = transcription_db.get_transcription_group(db, token)
+    else:
+        result = transcription_db.get_transcription(db, token)
     if not result:
         return jsonify({"error": "not found"}), 404
     result['has_embeddings'] = embedding_db.has_embeddings(db, result['id'])
