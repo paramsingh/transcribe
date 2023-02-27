@@ -17,18 +17,18 @@ export const TranscriptionTable = ({
   transcriptions: {
     token: string;
     link: string;
-    summary_exists: boolean;
+    result_exists: boolean;
     improvement_failed: boolean;
     transcribe_failed: boolean;
   }[];
   showOnlySuccessful?: boolean;
 }) => {
   const getStatusBadge = (transcription: {
-    summary_exists: boolean;
+    result_exists: boolean;
     improvement_failed: boolean;
     transcribe_failed: boolean;
   }) => {
-    if (transcription.summary_exists) {
+    if (transcription.result_exists) {
       return <Badge colorScheme="green">Complete</Badge>;
     } else {
       if (transcription.improvement_failed || transcription.transcribe_failed) {

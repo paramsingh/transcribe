@@ -19,8 +19,8 @@ def get_transcription_group(db, group_token: str) -> Union[dict, None]:
         cursor.execute(
             """
             SELECT token,
-                   link, 
-                   CASE WHEN summary IS NULL then 0 else 1 END,
+                   link,
+                   CASE WHEN result IS NULL then 0 else 1 END,
                    transcribe_failed,
                    improvement_failed,
                    created
@@ -41,7 +41,7 @@ def get_transcription_group(db, group_token: str) -> Union[dict, None]:
                     "transcriptions": [{
                         "token": row[0],
                         "link": row[1],
-                        "summary_exists": bool(row[2]),
+                        "result_exists": bool(row[2]),
                         "transcribe_failed": row[3],
                         "improvement_failed": row[4],
                         "created": str(row[5]),
@@ -251,9 +251,11 @@ def create_transcriptions_with_group(db, group_items: List[str], user_id: int, g
     for link in group_items:
         if link not in existing:
             token = f"tr-{uuid4()}"
-            c_id = create_transcription_with_token_returning_id(db, link, user_id, None, token)
+            c_id = create_transcription_with_token_returning_id(
+                db, link, user_id, None, token)
             c_ids.append(c_id)
-    g_id = create_transcription_with_token_returning_id(db, g_link, user_id, "GROUP_TRANSCRIPTION", g_token)
+    g_id = create_transcription_with_token_returning_id(
+        db, g_link, user_id, "GROUP_TRANSCRIPTION", g_token)
     create_group_entry(db, g_id, c_ids)
 
 
@@ -336,7 +338,7 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
         """
         SELECT t.token,
                t.link,
-               CASE WHEN summary IS NULL then 0 else 1 END,
+               CASE WHEN result IS NULL then 0 else 1 END,
                t.transcribe_failed,
                t.improvement_failed,
                ut.created
@@ -351,7 +353,7 @@ def get_user_transcription_attempts(db: sqlite3.Connection, user_id: int) -> int
     return [{
         "token": row[0],
         "link": row[1],
-        "summary_exists": bool(row[2]),
+        "result_exists": bool(row[2]),
         "transcribe_failed": row[3],
         "improvement_failed": row[4],
         "created": str(row[5]),
@@ -364,7 +366,7 @@ def get_recent_transcriptions(db: sqlite3.Connection, limit: int = RECENT_TRANSC
         """
         SELECT token,
                link,
-               CASE WHEN summary IS NULL then 0 else 1 END,
+               CASE WHEN result IS NULL then 0 else 1 END,
                transcribe_failed,
                improvement_failed,
                created
@@ -379,7 +381,7 @@ def get_recent_transcriptions(db: sqlite3.Connection, limit: int = RECENT_TRANSC
     return [{
         "token": row[0],
         "link": row[1],
-        "summary_exists": bool(row[2]),
+        "result_exists": bool(row[2]),
         "transcribe_failed": row[3],
         "improvement_failed": row[4],
         "created": str(row[5]),
