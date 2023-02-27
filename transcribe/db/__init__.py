@@ -73,4 +73,11 @@ def create_tables(connection: sqlite3.Connection) -> None:
                          ON embedding(transcription_id);
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS transcription_group (
+            group_id            INTEGER NOT NULL,
+            transcription_id    INTEGER NOT NULL
+        );
+    """)
+
     connection.commit()
