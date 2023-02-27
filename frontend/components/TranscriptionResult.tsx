@@ -130,58 +130,13 @@ export const TranscriptionResult = ({
               )}
             </Alert>
           )}
+          {/* Youtube embed */}
           {!waiting && link && <YoutubeEmbed link={link} />}
+          {/* Summary */}
           {!waiting && summary && (
             <Transcription text={summary} heading="Summary" />
           )}
-          {!waiting &&
-            transcriptionResult &&
-            showData == DataType.TRANSCRIPTION && (
-              <Transcription
-                heading="Transcription"
-                text={transcriptionResult.transcription}
-              />
-            )}
-          {!waiting && !transcriptionResult && (
-            <Heading as={"h5"} size={"md"}>
-              Transcription does not exist. {":("}
-            </Heading>
-          )}
-          {/*** TODO: think about hiding this entirely */}
-          {!waiting && transcriptionResult && !improvement && (
-            <Alert status="info" style={{ marginBottom: "20px" }}>
-              <AlertIcon />
-              We&lsquo;re working on improving this transcription. Please check
-              again later.
-            </Alert>
-          )}
-          {!waiting && transcriptionResult && improvement && (
-            <Alert status="success" style={{ marginBottom: "20px" }}>
-              {showData == DataType.IMPROVEMENT ? (
-                <Text>
-                  This is a GPT-3 enhanced version of the transcription ✨.
-                  Click{" "}
-                  <Link onClick={() => setShowData(DataType.TRANSCRIPTION)}>
-                    here
-                  </Link>{" "}
-                  to see the original.
-                </Text>
-              ) : (
-                <Text>
-                  There is an improved ✨ version of this transcription
-                  available. Click{" "}
-                  <Link onClick={() => setShowData(DataType.IMPROVEMENT)}>
-                    here
-                  </Link>{" "}
-                  to see it.
-                </Text>
-              )}
-            </Alert>
-          )}
-          {!waiting && link && <YoutubeEmbed link={link} />}
-          {!waiting && summary && (
-            <Transcription text={summary} heading="Summary" />
-          )}
+          {/* show the result if not improved */}
           {!waiting &&
             transcriptionResult &&
             showData == DataType.TRANSCRIPTION && (
