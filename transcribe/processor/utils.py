@@ -1,7 +1,15 @@
 from urllib import parse
 from urllib.parse import ParseResult
+from pytube import YouTube
 
 import yt_dlp
+
+
+def get_youtube_video_length(link: str):
+    """
+    Returns the length of a YouTube video in seconds.
+    """
+    return YouTube(link).length
 
 
 def is_group_link(link: str):

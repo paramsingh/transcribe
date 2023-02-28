@@ -12,9 +12,12 @@ import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
-from transcribe.processor.utils import is_group_link, get_group_items, is_group_token
+from transcribe.processor.utils import is_group_link, get_group_items, is_group_token, get_youtube_video_length
 
 api_bp = Blueprint("api_v1", __name__)
+
+MAX_LENGTH_ALLOWED_FOR_UNAUTHENTICATED_SUBMISSION = 20 * 60  # 20 minutes
+MAX_LENGTH_ALLOWED_PER_VIDEO = 4 * 60 * 60  # 4 hours
 
 
 def get_session_token(req) -> typing.Optional[str]:
@@ -37,10 +40,25 @@ def get_user(req) -> typing.Optional[dict]:
 @api_bp.route("/transcribe", methods=["POST"])
 @cross_origin()
 def transcribe() -> Response:
-    user = get_user(request)
-    user_id = user['id'] if user else None
     request_data = typing.cast(typing.Dict[str, str], request.get_json())
     link = request_data.get("link")
+    user = get_user(request)
+    user_id = user['id'] if user else None
+
+    # don't allow group links for unauthenticated users
+    if is_group_link(link) and not user:
+        return jsonify({"error": "group links require login", "code": "GROUP_LINKS_NEED_LOGIN"}), 400
+
+    video_length = get_youtube_video_length(link)
+
+    # don't allow videos longer than 4 hours, regardless of user
+    if video_length > MAX_LENGTH_ALLOWED_PER_VIDEO:
+        return jsonify({"error": "video too long", "code": "VIDEO_TOO_LONG"}), 400
+
+    # don't allow videos longer than 20 minutes for unauthenticated users
+    if not user and video_length > MAX_LENGTH_ALLOWED_FOR_UNAUTHENTICATED_SUBMISSION:
+        return jsonify({"error": "video too long, needs login", "code": "VIDEO_TOO_LONG_FOR_UNAUTHENTICATED"}), 400
+
     if not link:
         return jsonify({"error": "no link"}), 400
     db = get_flask_db()
