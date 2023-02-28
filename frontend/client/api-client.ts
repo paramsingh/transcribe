@@ -16,6 +16,11 @@ export const submitLink = async (link: string) => {
     headers: headers,
     body: JSON.stringify({ link }),
   });
+
+  if (response.status === 400) {
+    const data: { code: string } = await response.json();
+    throw new Error(data.code);
+  }
   return response.json();
 };
 

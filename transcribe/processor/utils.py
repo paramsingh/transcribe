@@ -24,7 +24,8 @@ def _is_playlist_path(link: ParseResult):
 
 def _is_playlist_in_watch_query(link: ParseResult):
     # https://www.youtube.com/watch?v=vwn77cUarTs&list=PL8HowI-L-3_9bkocmR3JahQ4Y-Pbqs2Nt&index=1
-    query = {element[0]: element[1] for element in [q.split("=") for q in link.query.split("&")]}
+    query = {element[0]: element[1]
+             for element in [q.split("=") for q in link.query.split("&")]}
     return link.path == "/watch" and 'list' in query.keys()
 
 
@@ -38,11 +39,10 @@ def get_group_items(link: str):
     }
     result = yt_dlp.YoutubeDL(ydl_opts).extract_info(
         link,
-        download=False
+        download=False,
     )
     return list(set([entry["url"] for entry in result["entries"]]))
 
 
 def is_group_token(token: str):
     return token.startswith('gr-')
-

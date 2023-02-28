@@ -60,7 +60,7 @@ def transcribe() -> Response:
         return jsonify({"error": "video too long, needs login", "code": "VIDEO_TOO_LONG_FOR_UNAUTHENTICATED"}), 400
 
     if not link:
-        return jsonify({"error": "no link"}), 400
+        return jsonify({"error": "no link", "code": "NO_LINK"}), 400
     db = get_flask_db()
     existing = transcription_db.get_transcription_by_link(db, link)
     if existing:
@@ -79,10 +79,12 @@ def create_transcription(db, link: str, user_id: int) -> str:
         return _token
     if is_group_link(link):
         token = f"gr-{str(uuid4())}"
-        transcription_db.create_transcriptions_with_group(db, get_group_items(link), user_id, token, link)
+        transcription_db.create_transcriptions_with_group(
+            db, get_group_items(link), user_id, token, link)
     else:
         token = f"tr-{str(uuid4())}"
-        transcription_db.create_transcription_with_transcription_token(db, link, user_id, token)
+        transcription_db.create_transcription_with_transcription_token(
+            db, link, user_id, token)
     return token
 
 

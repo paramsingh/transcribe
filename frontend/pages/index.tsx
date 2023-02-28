@@ -13,7 +13,12 @@ import { PopoverInfo } from "../components/PopoverInfo";
 import Link from "next/link";
 import { RecentTranscriptions } from "../components/RecentTranscriptions";
 
-const inter = Inter({ subsets: ["latin"] });
+enum ErrorCodes {
+  NO_LINK = "NO_LINK",
+  GROUP_LINKS_NEED_LOGIN = "GROUP_LINKS_NEED_LOGIN",
+  VIDEO_TOO_LONG = "VIDEO_TOO_LONG",
+  VIDEO_TOO_LONG_FOR_UNAUTHENTICATED = "VIDEO_TOO_LONG_FOR_UNAUTHENTICATED",
+}
 
 export default function Transcription() {
   const [link, setLink] = useState<string>("");
@@ -62,15 +67,41 @@ export default function Transcription() {
     }
 
     setSubmitted(true);
-    submitLink(link).then((data) => {
-      console.debug("submitted successfully!", data);
-      console.debug(data.id);
-      setTranscriptionID(data.id);
-      const id = setInterval(() => {
-        listenForResults(data.id);
-      }, 5 * 1000);
-      setListenID(id);
-    });
+    submitLink(link)
+      .then((data) => {
+        console.debug("submitted successfully!", data);
+        console.debug(data.id);
+        setTranscriptionID(data.id);
+        const id = setInterval(() => {
+          listenForResults(data.id);
+        }, 5 * 1000);
+        setListenID(id);
+      })
+      .catch((e) => {
+        switch (e.message) {
+          case ErrorCodes.NO_LINK:
+            alert("No link found, try again!");
+            break;
+          case ErrorCodes.GROUP_LINKS_NEED_LOGIN:
+            alert(
+              "Unauthenticated users cannot transcribe playlists. Please sign in and try again!"
+            );
+            break;
+          case ErrorCodes.VIDEO_TOO_LONG:
+            alert(
+              "Video too long, we cannot afford to transcribe these right now, sorry! If you really want to do this, please contact us."
+            );
+            break;
+          case ErrorCodes.VIDEO_TOO_LONG_FOR_UNAUTHENTICATED:
+            alert(
+              "Unauthenticated users cannot transcribe videos longer than 20 minutes. Please sign in and try again!"
+            );
+            break;
+          default:
+            alert("Something went wrong, try again!");
+        }
+        setSubmitted(false);
+      });
   };
 
   return (
