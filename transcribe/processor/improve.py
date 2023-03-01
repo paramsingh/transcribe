@@ -160,6 +160,16 @@ The following is the transcription of a youtube video (Link: {link}).
         index = GPTSimpleVectorIndex([document])
         return index.save_to_string()
 
+    def create_embeddings_n(self, raw: List[str], group: str) -> str:
+
+        """ Create embeddings for the text using GPT-3 """
+        text = f"""
+        The following is the transcription of a group (Link: {group}).
+        """
+        documents = [Document(text) for text in raw]
+        index = GPTSimpleVectorIndex(documents)
+        return index.save_to_string()
+
 
 if __name__ == "__main__":
     openai.api_key = OPENAI_API_KEY
