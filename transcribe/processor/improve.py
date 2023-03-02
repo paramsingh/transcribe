@@ -34,7 +34,7 @@ class Improver:
     def __init__(self):
         self.db = init_db()
 
-    def get_token_count(self, messages: list[dict]) -> int:
+    def get_token_count(self, messages: List[dict]) -> int:
         size = sum([len(message["content"].split()) for message in messages])
         return size // 4
 
