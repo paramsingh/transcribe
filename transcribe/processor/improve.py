@@ -134,7 +134,7 @@ class Improver:
                 {"role": "user", "content": text},
             ]
             result = self.make_openai_request(
-                [system_input, {"role": "user", "content": text}], self.get_token_count(messages) + 100)
+                messages, self.get_token_count(messages) + 750)
             results.append(result)
         return "\n".join(results)
 
