@@ -45,7 +45,7 @@ def transcribe(token: str, version) -> str:
     with yaspin(text="Transcribing...", timer=True):
         try:
             if DEVELOPMENT_MODE:
-                output = "test output please ignore"
+                output = {"transcription": "test output please ignore"}
                 # output = version.predict(
                 #     audio=get_downloaded_file_path(token))
             else:

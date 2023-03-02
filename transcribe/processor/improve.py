@@ -34,8 +34,9 @@ class Improver:
     def __init__(self):
         self.db = init_db()
 
-    def get_token_count(self, string):
-        return len(string) // 4
+    def get_token_count(self, messages: list[dict]) -> int:
+        size = sum([len(message["content"].split()) for message in messages])
+        return size // 4
 
     def improve_one_transcription(self):
         """Get an unimproved transcription from the database and improve it."""
@@ -45,7 +46,14 @@ class Improver:
             print("nothing to do in this cycle!")
             return
         print("improving transcription with link: ", unimproved["link"])
-        result = json.loads(unimproved["result"])
+        try:
+            result = json.loads(unimproved["result"])
+        except Exception as e:
+            sentry_report(e)
+            print("Improvement failed with error: ", e)
+            mark_improvement_failed(self.db, unimproved["token"])
+            return
+
         if not unimproved["improvement"]:
             print("Improving...")
             try:
@@ -105,50 +113,46 @@ class Improver:
         print("Number of words: ", len(words))
         return word_groups
 
-    def make_openai_request(self, prompt: str, max_tokens: int) -> str:
-        prompt_size = self.get_token_count(prompt)
+    def make_openai_request(self, messages: list[dict], max_tokens: int) -> str:
+        prompt_size = self.get_token_count(messages)
         if max_tokens + prompt_size > DAVINCI_MAX_TOKENS:
             max_tokens = DAVINCI_MAX_TOKENS - prompt_size
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            temperature=0.5,
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
             max_tokens=max_tokens,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0.6,
         )
-        return response.choices[0].text
+        return response.choices[0]["message"]["content"]
 
-    def group_and_make_openai_requests(self, raw: str, prompt: str) -> str:
+    def group_and_make_openai_requests(self, raw: str, system_input: dict) -> str:
         word_groups = self.get_word_groups(raw)
         results = []
         for word_group in word_groups:
             text = " ".join(word_group)
+            messages = [
+                system_input,
+                {"role": "user", "content": text},
+            ]
             result = self.make_openai_request(
-                prompt.format(text=text), self.get_token_count(text) + 100)
+                [system_input, {"role": "user", "content": text}], self.get_token_count(messages) + 100)
             results.append(result)
         return "\n".join(results)
 
     def improve_text(self, raw: str) -> str:
 
         # TODO: add some validation to not improve long transcriptions, unless requested
-        prompt = """Format the text from the transcript of a youtube video to add paragraphing, punctuations and capitalization. Also, remove any typos. Do NOT paraphrase or remove any sentences, only change the format and remove errors.
+        system_input = {
+            "role": "system",
+            "content":  """Format the text from the transcript of a youtube video (provided by the user) to add paragraphing, punctuations and capitalization. Also, remove any typos. Do NOT paraphrase or remove any sentences, only change the format and remove errors.""",
+        }
 
-Transcript:
-{text}
-
-Improved transcript:"""
-        return self.group_and_make_openai_requests(raw, prompt)
+        return self.group_and_make_openai_requests(raw, system_input)
 
     def summarize_text(self, raw: str) -> str:
         """ Create a summary of the text using GPT-3 """
-        prompt = """Summarize the following text in nested bullet point format. Make sure to capture all the important ideas in the text.
-Text:
-{text}
-
-Summary:"""
-        return self.group_and_make_openai_requests(raw, prompt)
+        system_input = {
+            "role": "system", "content": "Summarize the transcription of a Youtube video the user provides succinctly in a few paragraphs. Make sure to capture all the important ideas in the text. The summary should be succinct and to the point."}
+        return self.group_and_make_openai_requests(raw, system_input)
 
     def create_embeddings(self, raw: str, link: str) -> str:
         """ Create embeddings for the text using GPT-3 """

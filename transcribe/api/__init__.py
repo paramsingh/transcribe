@@ -82,9 +82,8 @@ def create_transcription(db, link: str, user_id: int) -> str:
         transcription_db.create_transcriptions_with_group(
             db, get_group_items(link), user_id, token, link)
     else:
-        token = f"tr-{str(uuid4())}"
-        transcription_db.create_transcription_with_transcription_token(
-            db, link, user_id, token)
+        token = transcription_db.create_transcription_with_transcription_token(
+            db, link, user_id, None)
     return token
 
 

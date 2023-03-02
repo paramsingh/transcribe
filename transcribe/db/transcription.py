@@ -270,7 +270,7 @@ def create_group_entry(db, g_token, child_tokens):
     db.commit()
 
 
-def create_transcription_with_transcription_token(db, link: str, user_id: int, result: str) -> str:
+def create_transcription_with_transcription_token(db, link: str, user_id: int, result: Optional[str]) -> str:
     cursor = db.cursor()
 
     token = f"tr-{str(uuid4())}"
