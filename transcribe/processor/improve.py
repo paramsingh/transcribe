@@ -113,7 +113,7 @@ class Improver:
         print("Number of words: ", len(words))
         return word_groups
 
-    def make_openai_request(self, messages: list[dict], max_tokens: int) -> str:
+    def make_openai_request(self, messages: List[dict], max_tokens: int) -> str:
         prompt_size = self.get_token_count(messages)
         if max_tokens + prompt_size > DAVINCI_MAX_TOKENS:
             max_tokens = DAVINCI_MAX_TOKENS - prompt_size
