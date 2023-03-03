@@ -99,6 +99,24 @@ def get_transcription_by_link(db, link):
     return None
 
 
+def get_summary_for_link(db, link):
+    cursor = db.cursor()
+
+    cursor.execute(
+        """
+        SELECT summary
+          FROM transcription
+         WHERE link = ?;
+    """,
+        (link,),
+    )
+    result = cursor.fetchone()
+
+    if result:
+        return result[0]
+    return None
+
+
 def get_transcriptions_by_link(db, links: List[str]):
     cursor = db.cursor()
     placeholders = ", ".join("?" * len(links))
