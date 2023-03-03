@@ -1,11 +1,10 @@
-import chromadb
 import json
 from transcribe.config import OPENAI_API_KEY
 from transcribe.db import init_db
 import transcribe.db.embedding as db_embedding
 import transcribe.db.transcription as db_transcription
 from typing import Optional
-from gpt_index import GPTSimpleVectorIndex, GPTListIndex, GPTPineconeIndex
+from gpt_index import GPTSimpleVectorIndex, GPTListIndex
 import openai
 import os
 from yaspin import yaspin
