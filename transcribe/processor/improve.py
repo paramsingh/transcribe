@@ -89,7 +89,7 @@ class Improver:
             if not embedding:
                 with yaspin(text="Summarizing...", timer=True):
                     embedding = self.create_embeddings(
-                        unimproved["result"], unimproved["link"])
+                        result['transcription'], unimproved["link"])
                 db_embedding.save_embeddings_for_transcription(
                     self.db, unimproved["id"], embedding)
             print("Done creating index!")
