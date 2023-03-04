@@ -1,5 +1,5 @@
 import json
-from transcribe.config import OPENAI_API_KEY
+from transcribe.config import OPENAI_API_KEY, PINECONE_API_KEY
 from transcribe.db import init_db
 import transcribe.db.embedding as db_embedding
 import transcribe.db.transcription as db_transcription
@@ -11,7 +11,7 @@ from yaspin import yaspin
 
 
 import pinecone
-api_key = "cab26ede-432b-40d5-bcf2-6f7849be9adc"
+api_key = PINECONE_API_KEY
 pinecone.init(api_key=api_key, environment="us-east1-gcp")
 pindex = pinecone.Index("quickstart")
 
@@ -35,6 +35,7 @@ def get_index_for_video(id: str, db) -> Optional[GPTSimpleVectorIndex]:
     index = GPTSimpleVectorIndex.load_from_string(
         embedding['embedding_json'],
     )
+
     index.set_doc_id(link)
     summary = db_transcription.get_summary_for_link(db, link)
     if not summary:
