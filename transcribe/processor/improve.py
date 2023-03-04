@@ -160,7 +160,7 @@ class Improver:
 The following is the transcription of a youtube video (Link: {link}).
 
 {raw}"""
-        document = Document(text)
+        document = Document(text, doc_id=link)
         index = GPTSimpleVectorIndex([document])
         return index.save_to_string()
 
