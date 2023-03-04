@@ -7,7 +7,7 @@ from flask_cors import cross_origin  # type: ignore
 from flask import Blueprint, jsonify, Response, request, send_file
 from gpt_index import GPTSimpleVectorIndex
 
-from transcribe.db.db_utils import get_flask_db
+from transcribe.db.db_utils import get_flask_db, get_pinecone_index
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 import transcribe.db.embedding as embedding_db
@@ -35,6 +35,16 @@ def get_user(req) -> typing.Optional[dict]:
         return None
     db = get_flask_db()
     return db_session.validate_and_get_user(db, session_token)
+
+
+def get_source_video_link(gpt_response):
+    try:
+        source_text = gpt_response.source_nodes[0].source_text
+        first_line = source_text.split('\n')[0]
+        # this line looks like "doc id: https://youtube.com/watch?id=blah"
+        return first_line.split(': ')[-1].strip()
+    except:
+        return None
 
 
 @api_bp.route("/transcribe", methods=["POST"])
@@ -150,11 +160,30 @@ def ask(token: str):
         return jsonify({"error": "no question"}), 400
 
     db = get_flask_db()
-    transcription = transcription_db.get_transcription(db, token)
-    if transcription is None:
-        return jsonify({"error": "not found"}), 404
-    embeddings = embedding_db.get_embeddings_for_transcription(
-        db, transcription['id'])
-    index = GPTSimpleVectorIndex.load_from_string(embeddings['embedding_json'])
-    answer = index.query(question)
-    return jsonify({"answer": str(answer)})
+    if token == 'yc':
+        index = get_pinecone_index()
+        answer = index.query(question)
+        source_video_link = get_source_video_link(answer)
+        transcription = transcription_db.get_transcription_by_link(
+            db,
+            source_video_link,
+        )
+        return jsonify({
+            "answer": str(answer),
+            "sources": [
+                {
+                    "video": get_source_video_link(answer),
+                    "transcription_token": transcription['token'],
+                },
+            ],
+        })
+    else:
+        transcription = transcription_db.get_transcription(db, token)
+        if transcription is None:
+            return jsonify({"error": "not found"}), 404
+        embeddings = embedding_db.get_embeddings_for_transcription(
+            db, transcription['id'])
+        index = GPTSimpleVectorIndex.load_from_string(
+            embeddings['embedding_json'])
+        answer = index.query(question)
+        return jsonify({"answer": str(answer)})
