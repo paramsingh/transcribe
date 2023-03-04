@@ -4,22 +4,16 @@ from transcribe.db import init_db
 import transcribe.db.embedding as db_embedding
 import transcribe.db.transcription as db_transcription
 from typing import Optional
-from gpt_index import GPTSimpleVectorIndex, GPTListIndex
+from gpt_index import GPTSimpleVectorIndex, GPTListIndex, Document, GPTPineconeIndex
 import openai
 import os
 from yaspin import yaspin
 
 
-# import pinecone
-# api_key = "cab26ede-432b-40d5-bcf2-6f7849be9adc"
-# pinecone.init(api_key=api_key, environment="us-east1-gcp")
-# pinecone.create_index(
-#     "quickstart",
-#     dimension=1536,
-#     metric="euclidean",
-#     pod_type="p1"
-# )
-# pindex = pinecone.Index("quickstart")
+import pinecone
+api_key = "cab26ede-432b-40d5-bcf2-6f7849be9adc"
+pinecone.init(api_key=api_key, environment="us-east1-gcp")
+pindex = pinecone.Index("quickstart")
 
 
 def get_ycombinator_videos():
