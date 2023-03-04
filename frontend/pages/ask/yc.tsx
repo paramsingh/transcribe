@@ -83,7 +83,7 @@ export default function TranscriptionAsk() {
                 </Heading>
                 <Text marginBottom={5}>
                   We got this answer from this{" "}
-                  <Link href={src.video}>video</Link>. Here's a{" "}
+                  <Link href={src.video}>video</Link>. Here&apos;s a{" "}
                   <Link href={`/result/${src.transcription_token}`}>
                     link to the transcription
                   </Link>
