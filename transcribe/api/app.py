@@ -8,6 +8,7 @@ from transcribe.login.flask import login_bp
 from transcribe.db.db_utils import get_flask_db
 import transcribe.config as config
 from sentry_sdk.integrations.flask import FlaskIntegration
+import pinecone
 
 if not config.DEVELOPMENT_MODE:
     sentry_sdk.init(
@@ -44,4 +45,5 @@ if __name__ == "__main__":
     db.create_tables(connection)
     connection.close()
     os.environ["OPENAI_API_KEY"] = config.OPENAI_API_KEY
+    pinecone.init(api_key=config.PINECONE_API_KEY, environment="us-east1-gcp")
     app.run(debug=config.DEVELOPMENT_MODE, port=6550)
