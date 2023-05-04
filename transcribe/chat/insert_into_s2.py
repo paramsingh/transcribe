@@ -9,6 +9,8 @@ import openai
 import tiktoken
 import time
 
+openai.api_key = OPENAI_API_KEY
+
 
 def insert_embedding(conn, vector, txt, src=None):
     # Convert the array of floats to binary format
