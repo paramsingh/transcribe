@@ -7,12 +7,13 @@ from flask_cors import cross_origin  # type: ignore
 from flask import Blueprint, jsonify, Response, request, send_file
 from gpt_index import GPTSimpleVectorIndex
 
-from transcribe.db.db_utils import get_flask_db, get_pinecone_index
+from transcribe.db.db_utils import get_flask_db, get_pinecone_index, get_s2_connection
+from transcribe.chat.insert_into_s2 import get_answer
 import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
-from transcribe.processor.utils import is_group_link, get_group_items, is_group_token, get_youtube_video_length
+from transcribe.processor.utils import is_group_link, get_group_items, is_group_token, get_youtube_video_length, get_caption_from_youtube
 
 api_bp = Blueprint("api_v1", __name__)
 
@@ -92,8 +93,12 @@ def create_transcription(db, link: str, user_id: int) -> str:
         transcription_db.create_transcriptions_with_group(
             db, get_group_items(link), user_id, token, link)
     else:
+        transcription = get_caption_from_youtube(link)
+        result_json = None
+        if transcription is not None:
+            result_json = json.dumps({"transcription": transcription})
         token = transcription_db.create_transcription_with_transcription_token(
-            db, link, user_id, None)
+            db, link, user_id, result_json)
     return token
 
 
@@ -176,6 +181,18 @@ def ask(token: str):
                     "transcription_token": transcription['token'],
                 },
             ],
+        })
+    elif token == 'yc-s2':
+        connection = get_s2_connection()
+        answer, source = get_answer(connection, question)
+        return jsonify({
+            "answer": str(answer),
+            "sources": [
+                {
+                    "video": source,
+                    "transcription_token": transcription_db.get_transcription_by_link(db, source)['token'],
+                }
+            ]
         })
     else:
         transcription = transcription_db.get_transcription(db, token)
