@@ -13,7 +13,7 @@ import transcribe.login.db.session as db_session
 import transcribe.db.transcription as transcription_db
 import transcribe.db.embedding as embedding_db
 from transcribe.processor.transcribe import get_downloaded_file_path
-from transcribe.processor.utils import is_group_link, get_group_items, is_group_token, get_youtube_video_length, get_caption_from_youtube
+from transcribe.processor.utils import is_group_link, get_group_items, is_group_token, get_youtube_video_length
 
 api_bp = Blueprint("api_v1", __name__)
 
