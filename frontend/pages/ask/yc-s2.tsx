@@ -43,6 +43,10 @@ export default function TranscriptionAsk() {
           it a question!{" "}
         </Text>
         <Text marginTop={5}>
+          This project is backed by{" "}
+          <a href="https://singlestore.com">SingleStore</a>.
+        </Text>
+        <Text marginTop={5}>
           If you have any feedback, please reach out to{" "}
           <Link href="https://twitter.com/iliekcomputers">@iliekcomputers</Link>{" "}
           on Twitter.
