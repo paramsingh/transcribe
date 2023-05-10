@@ -62,7 +62,7 @@ def embeddings_exist(conn, video_link):
 
 def create_singlestore_connection():
     return s2.connect(
-        host='svc-a31e9a7e-16a5-4af8-9da7-cfdec3e071f1-dml.aws-virginia-6.svc.singlestore.com',
+        host='svc-d996f713-3388-44fc-807f-97182ae2d360-dml.aws-oregon-4.svc.singlestore.com',
         port=3306,
         user='askyc_embeddings',
         database='askyc',
