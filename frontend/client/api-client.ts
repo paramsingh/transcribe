@@ -76,5 +76,8 @@ export const getAnswer = async (token: string, question: string) => {
       "Content-Type": "application/json",
     },
   });
+  if (response.status !== 200) {
+    throw new Error("Error fetching answer");
+  }
   return response.json();
 };

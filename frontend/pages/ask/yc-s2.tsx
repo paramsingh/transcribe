@@ -16,14 +16,21 @@ export default function TranscriptionAsk() {
   const [answer, setAnswer] = useState<string>("");
   const [waiting, setWaiting] = useState<boolean>(false);
   const [sources, setSources] = useState<Source[]>([]);
+  const [errored, setErrored] = useState<boolean>(false);
 
   const submit = () => {
+    setErrored(false);
     setWaiting(true);
-    getAnswer("yc-s2", question).then((data) => {
-      setAnswer(data.answer);
-      setSources(data.sources);
-      setWaiting(false);
-    });
+    getAnswer("yc-s2", question)
+      .then((data) => {
+        setAnswer(data.answer);
+        setSources(data.sources);
+        setWaiting(false);
+      })
+      .catch((err) => {
+        setWaiting(false);
+        setErrored(true);
+      });
   };
 
   return (
@@ -69,6 +76,11 @@ export default function TranscriptionAsk() {
         >
           Ask
         </Button>
+        {errored && (
+          <Text marginTop={5} color="red.500">
+            Something went wrong. Please try again.
+          </Text>
+        )}
         {answer !== "" && (
           <Box marginTop={5} marginBottom={5}>
             <Heading size="lg" marginBottom={5}>
