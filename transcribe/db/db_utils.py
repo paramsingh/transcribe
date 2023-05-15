@@ -1,5 +1,5 @@
 import transcribe.db as db
-from flask import g
+from flask import g, session
 import sqlite3
 import pinecone
 from gpt_index import GPTPineconeIndex
@@ -25,10 +25,11 @@ def get_pinecone_index() -> GPTPineconeIndex:
 
 
 def get_s2_connection():
-    s2_connection = getattr(g, "_s2_connection", None)
+    s2_connection = session.get("s2_connection", None)
     if s2_connection is None:
         print("need to create s2 connection")
-        s2_connection = g._s2_connection = create_singlestore_connection()
+        session["s2_connection"] = create_singlestore_connection()
+        s2_connection = session["s2_connection"]
     else:
         print("using existing s2 connection")
     return s2_connection

@@ -2,7 +2,7 @@ import sentry_sdk
 import os
 
 import transcribe.db as db
-from flask import Flask, g
+from flask import Flask, g, session
 from transcribe.api import api_bp
 from transcribe.login.flask import login_bp
 from transcribe.db.db_utils import get_flask_db
@@ -27,6 +27,7 @@ app.config['MAIL_USERNAME'] = config.FASTMAIL_USERNAME
 app.config['MAIL_PASSWORD'] = config.FASTMAIL_APP_PASSWORD
 app.register_blueprint(api_bp, url_prefix="/api/v1")
 app.register_blueprint(login_bp, url_prefix="/api/login")
+app.secret_key = 'super secret key'
 
 with app.app_context():
     get_flask_db()
