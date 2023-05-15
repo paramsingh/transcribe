@@ -28,7 +28,7 @@ def insert_embedding(conn, vector, txt, src=None):
         conn.commit()
 
 
-def get_closest(conn, vector, limit=3):
+def get_closest(conn, vector, limit=1):
     t = time.time()
     # Convert the array of floats to binary format
     binary_vector = struct.pack(f'{len(vector)}f', *vector)
