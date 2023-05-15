@@ -27,5 +27,8 @@ def get_pinecone_index() -> GPTPineconeIndex:
 def get_s2_connection():
     s2_connection = getattr(g, "_s2_connection", None)
     if s2_connection is None:
+        print("need to create s2 connection")
         s2_connection = g._s2_connection = create_singlestore_connection()
+    else:
+        print("using existing s2 connection")
     return s2_connection

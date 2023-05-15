@@ -190,7 +190,8 @@ def ask(token: str):
         print(f"took {time.time() - t} to get connection")
 
         answer, source = get_answer(connection, question)
-        print(f"took {time.time() - t} to get final result")
+        print(
+            f"endpoint took a total of {time.time() - t} to get final answer")
         return jsonify({
             "answer": str(answer),
             "sources": [
