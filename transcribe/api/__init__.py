@@ -1,3 +1,5 @@
+import json
+import time
 import typing
 from typing import Union
 import os
@@ -183,8 +185,12 @@ def ask(token: str):
             ],
         })
     elif token == 'yc-s2':
+        t = time.time()
         connection = get_s2_connection()
+        print(f"took {time.time() - t} to get connection")
+
         answer, source = get_answer(connection, question)
+        print(f"took {time.time() - t} to get final result")
         return jsonify({
             "answer": str(answer),
             "sources": [

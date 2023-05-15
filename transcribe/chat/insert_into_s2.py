@@ -29,6 +29,7 @@ def insert_embedding(conn, vector, txt, src=None):
 
 
 def get_closest(conn, vector, limit=3):
+    t = time.time()
     # Convert the array of floats to binary format
     binary_vector = struct.pack(f'{len(vector)}f', *vector)
     # print(binary_vector)
@@ -45,6 +46,7 @@ def get_closest(conn, vector, limit=3):
     with conn.cursor() as cursor:
         cursor.execute(query, (binary_vector, limit))
         results = cursor.fetchall()
+        print(f"took {time.time() - t} to get closest")
         return results
 
 
@@ -72,11 +74,12 @@ def create_singlestore_connection():
 
 def get_context(conn, question: str) -> str:
     """ Gets a context for a question. """
+    t = time.time()
     question_embedding = openai.Embedding.create(
         input=question,
         model="text-embedding-ada-002"
     )['data'][0]['embedding']
-    print(len(question_embedding))
+    print(f"took {time.time() - t} to get question embedding")
     # print("question_embedding", question_embedding)
     closest = get_closest(conn, question_embedding)
     # for c in closest:
@@ -87,7 +90,9 @@ def get_context(conn, question: str) -> str:
 
 def get_answer(conn, question: str):
     """ Gets an answer for a question. """
+    t = time.time()
     context, source = get_context(conn, question)
+    print(f"took {time.time() - t} to get context")
     prompt = f"""
 
 You are a bot that answers questions about videos from YCombinator's YouTube channel. The context
@@ -97,10 +102,12 @@ Answer the question based on the context below. Try to be detailed and explain t
 If the question can't be answered based on the context,
 say \"I don't know\"\n\nContext: {context}\n\n---\n\nQuestion: {question}\nAnswer:
 """
+    t = time.time()
     response = openai.ChatCompletion.create(
         messages=[{"role": "user", "content": prompt}],
         model="gpt-3.5-turbo"
     )
+    print(f"took {time.time() - t} to get answer")
     return response["choices"][0].message["content"], source
 
 
