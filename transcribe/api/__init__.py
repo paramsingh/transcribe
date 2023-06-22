@@ -95,10 +95,7 @@ def create_transcription(db, link: str, user_id: int) -> str:
         transcription_db.create_transcriptions_with_group(
             db, get_group_items(link), user_id, token, link)
     else:
-        transcription = get_caption_from_youtube(link)
         result_json = None
-        if transcription is not None:
-            result_json = json.dumps({"transcription": transcription})
         token = transcription_db.create_transcription_with_transcription_token(
             db, link, user_id, result_json)
     return token
